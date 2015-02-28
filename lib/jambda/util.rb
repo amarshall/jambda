@@ -19,12 +19,4 @@ module Jambda::Util
     _, *xs = coll
     xs
   end
-
-  private def split_when xs, &func
-    chunks = [[]]
-    xs.each do |x|
-      func.call(x) ? chunks << [] : chunks.last << x
-    end
-    chunks
-  end
 end

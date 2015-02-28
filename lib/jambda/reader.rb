@@ -7,13 +7,15 @@ class << Jambda::Reader
   include Jambda::Util
 
   def read_str str
-    read_form([], tokenize(str))
+    form, _ = read_form([].freeze, tokenize(str))
+    form
   end
 
   def read_form form, tokens
-    return form if tokens.empty?
     nform, ntokens = case peek(tokens)
                      when '(' then read_list(rest(tokens))
+                     when ')' then return [form, rest(tokens)]
+                     when nil then return [form, []]
                      else read_atom(tokens)
                      end
     read_form(form + [nform], ntokens)
@@ -29,8 +31,7 @@ class << Jambda::Reader
   end
 
   def read_list tokens
-    inner, ntokens = split_when(tokens) { |s| s == ')' }
-    [read_form([], inner), ntokens]
+    read_form([], tokens)
   end
 
   def tokenize str

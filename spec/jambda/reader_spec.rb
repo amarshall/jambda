@@ -19,6 +19,11 @@ describe "reader" do
       input = '(1 2 3)'
       expect(read_str(input)).to eq [[1,2,3]]
     end
+
+    specify "a nested list" do
+      input = '(1 2 (3 (4 5)) 6 7 8)'
+      expect(read_str(input)).to eq [[1,2,[3,[4,5]],6,7,8]]
+    end
   end
 
   describe "tokenize" do
