@@ -14,11 +14,11 @@ class << Jambda::Reader
   def read_form form, tokens
     nform, ntokens = case peek(tokens)
                      when '(' then read_list(rest(tokens))
-                     when ')' then return [form, rest(tokens)]
-                     when nil then return [form, []]
+                     when ')' then return freeze2([form, rest(tokens)])
+                     when nil then return freeze2([form, []])
                      else read_atom(tokens)
                      end
-    read_form(form + [nform], ntokens)
+    read_form(freeze2(form + [nform]), ntokens)
   end
 
   def read_atom tokens # -> [form, tokens]
@@ -31,7 +31,7 @@ class << Jambda::Reader
   end
 
   def read_list tokens
-    read_form([], tokens)
+    read_form([].freeze, tokens)
   end
 
   def tokenize str
