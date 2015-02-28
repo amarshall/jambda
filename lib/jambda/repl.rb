@@ -8,7 +8,7 @@ module Jambda::REPL; end
 class << Jambda::REPL
   def loop
     while line = Readline.readline('jambda> ', true)
-      puts rep(line)
+      printf "∎ %s\n", rep(line)
     end
   end
 
