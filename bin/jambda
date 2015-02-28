@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+require 'jambda/repl'
+Jambda::REPL.loop
