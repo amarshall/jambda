@@ -33,6 +33,7 @@ class << Jambda::REPL
     when String then form
     when Numeric then form.to_s
     when nil then form.inspect
+    else '⸮⸮⸮'
     end
   end
 end
