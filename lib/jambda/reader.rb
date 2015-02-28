@@ -21,7 +21,7 @@ class << Jambda::Reader
     read_form(freeze2(form + [nform]), ntokens)
   end
 
-  def read_atom tokens # -> [form, tokens]
+  def read_atom tokens
     atom = peek(tokens)
     atom = case atom
            when /\A\d+\z/ then Integer(atom)
