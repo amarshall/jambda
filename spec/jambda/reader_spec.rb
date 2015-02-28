@@ -39,6 +39,11 @@ describe "reader" do
       expect(tokenize(input)).to eq %w[abc1 123a]
     end
 
+    specify "empty list" do
+      input = '()'
+      expect(tokenize(input)).to eq %w[( )]
+    end
+
     specify "single list" do
       input = '(1 2 3)'
       expect(tokenize(input)).to eq %w[( 1 2 3 )]
@@ -47,6 +52,16 @@ describe "reader" do
     specify "nested list" do
       input = '(1 (2) 3)'
       expect(tokenize(input)).to eq %w[( 1 ( 2 ) 3 )]
+    end
+
+    specify "nested list, empty" do
+      input = '((((()))))'
+      expect(tokenize(input)).to eq %w[( ( ( ( ( ) ) ) ) )]
+    end
+
+    specify "nested list, consecutive parens" do
+      input = '(((1 2 3)))'
+      expect(tokenize(input)).to eq %w[( ( ( 1 2 3 ) ) )]
     end
   end
 end

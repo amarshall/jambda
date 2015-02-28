@@ -34,7 +34,7 @@ class << Jambda::Reader
   end
 
   def tokenize str
-    tokens = str.split(' ').flat_map { |s| s.split(/\b/) }
+    tokens = str.split(/(\b|(?<=[()]))/).map(&:strip).reject(&:empty?)
     freeze2(tokens)
   end
 end
