@@ -2,6 +2,25 @@ require 'spec_helper'
 require 'jambda/reader'
 
 describe "reader" do
+  describe "read_str" do
+    refer Jambda::Reader, :read_str
+
+    specify "an atom" do
+      input = 'abc1'
+      expect(read_str(input)).to eq ['abc1']
+    end
+
+    specify "an integer literal" do
+      input = '42'
+      expect(read_str(input)).to eq [42]
+    end
+
+    specify "a list" do
+      input = '(1 2 3)'
+      expect(read_str(input)).to eq [[1,2,3]]
+    end
+  end
+
   describe "tokenize" do
     refer Jambda::Reader, :tokenize
 

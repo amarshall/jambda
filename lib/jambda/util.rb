@@ -10,4 +10,21 @@ module Jambda::Util
   private def freeze2 obj
     IceNine.deep_freeze(obj)
   end
+
+  private def peek coll
+    coll.first
+  end
+
+  private def rest coll
+    _, *xs = coll
+    xs
+  end
+
+  private def split_when xs, &func
+    chunks = [[]]
+    xs.each do |x|
+      func.call(x) ? chunks << [] : chunks.last << x
+    end
+    chunks
+  end
 end
