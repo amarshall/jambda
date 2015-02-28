@@ -1,0 +1,2 @@
+module Jambda
+end
