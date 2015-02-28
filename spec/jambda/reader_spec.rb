@@ -3,9 +3,7 @@ require 'jambda/reader'
 
 describe "reader" do
   describe "tokenize" do
-    def tokenize(*args, &block)
-      Jambda::Reader.tokenize(*args, &block)
-    end
+    refer Jambda::Reader, :tokenize
 
     specify "single token" do
       input = 'abc1'
