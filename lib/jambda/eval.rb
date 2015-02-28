@@ -19,6 +19,8 @@ class << Jambda::Eval
 
   def eval_sym env, sym, *args
     env.public_send(sym, *args)
+  rescue NoMethodError
+    raise Jambda::Error, "no such function: #{sym}"
   end
 
   def kernel

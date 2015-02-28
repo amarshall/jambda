@@ -23,6 +23,8 @@ class << Jambda::REPL
 
   def eval form
     Jambda::Eval.eval_form(form)
+  rescue Jambda::Error => ex
+    $stderr.puts "ERROR: #{ex.message}"
   end
 
   def print form
