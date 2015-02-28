@@ -68,5 +68,15 @@ describe "reader" do
       input = '(((1 2 3)))'
       expect(tokenize(input)).to eq %w[( ( ( 1 2 3 ) ) )]
     end
+
+    specify "comments, no prior content" do
+      input = '; comment'
+      expect(tokenize(input)).to eq %w[]
+    end
+
+    specify "comments, prior content" do
+      input = '42; comment'
+      expect(tokenize(input)).to eq %w[42]
+    end
   end
 end
