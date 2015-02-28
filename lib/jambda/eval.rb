@@ -7,13 +7,13 @@ module Jambda::Eval; end
 class << Jambda::Eval
   include Jambda::Util
 
-  def eval_form form
-    case form
+  def eval_ast ast
+    case ast
     when Enumerable
-      sym, *args = form
-      args = args.map { |arg| eval_form(arg) }
+      sym, *args = ast
+      args = args.map { |arg| eval_ast(arg) }
       eval_sym(kernel, sym, *args)
-    else form
+    else ast
     end
   end
 

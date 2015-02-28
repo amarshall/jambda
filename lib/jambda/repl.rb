@@ -17,24 +17,24 @@ class << Jambda::REPL
   end
 
   def read str
-    form, _ = Jambda::Reader.read_str(str)
-    form
+    ast, _ = Jambda::Reader.read_str(str)
+    ast
   end
 
-  def eval form
-    Jambda::Eval.eval_form(form)
+  def eval ast
+    Jambda::Eval.eval_ast(ast)
   rescue Jambda::Error => ex
     $stderr.puts "ERROR: #{ex.message}"
   end
 
-  def print form
-    case form
+  def print ast
+    case ast
     when Enumerable
-      inner = form.map { |frm| print(frm) }.join(' ')
+      inner = ast.map { |frm| print(frm) }.join(' ')
       "(#{inner})".freeze
-    when String then form
-    when Numeric then form.to_s
-    when nil then form.inspect
+    when String then ast
+    when Numeric then ast.to_s
+    when nil then ast.inspect
     else '⸮⸮⸮'
     end
   end
