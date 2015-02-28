@@ -45,7 +45,7 @@ class << Jambda::Reader
     require 'coderay'
     @trace ||= TracePoint.new(:call) do |point|
       if point.defined_class == Jambda::Reader.singleton_class
-        nesting = point.binding.send(:caller).grep(/lib\/jambda/).size - 1
+        nesting = point.binding.send(:caller).grep(/lib\/jambda/).size - 6
         lvars = point.binding.local_variables.each_with_object({}) do |lvar, h|
           val = point.binding.local_variable_get(lvar)
           next unless val
