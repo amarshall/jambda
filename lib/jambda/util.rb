@@ -17,6 +17,6 @@ module Jambda::Util
 
   private def rest coll
     _, *xs = coll
-    xs
+    freeze2(xs)
   end
 end
