@@ -1,4 +1,5 @@
 require 'jambda'
+require 'jambda/eval'
 require 'jambda/reader'
 require 'readline'
 
@@ -7,8 +8,12 @@ module Jambda::REPL; end
 class << Jambda::REPL
   def loop
     while line = Readline.readline('jambda> ', true)
-      puts print(eval(read(line)))
+      puts rep(line)
     end
+  end
+
+  def rep str
+    print(eval(read(str)))
   end
 
   def read str
@@ -17,7 +22,7 @@ class << Jambda::REPL
   end
 
   def eval form
-    form
+    Jambda::Eval.eval_form(form)
   end
 
   def print form
