@@ -2,12 +2,22 @@ require 'jambda'
 require 'jambda/eval'
 
 module Jambda::SpecialForms
-  LS = %i[if let].freeze # since respond_to? includes lots of junk
+  LS = %i[if fn let].freeze # since respond_to? includes lots of junk
 end
 
 class << Jambda::SpecialForms
   def if env, (cond, if_true, if_false)
     eval(env, cond) ? eval(env, if_true) : eval(env, if_false)
+  end
+
+  def fn env, (bindings, ast)
+    ->(*args) do
+      if args.size != bindings.size
+        raise ArgumentError, "wrong number of arguments #{args.size} for #{bindings.size}"
+      end
+      bindings = bindings.zip(args).flatten
+      eval(env, let(env, [bindings, ast]))
+    end
   end
 
   def let env, (bindings, ast)

@@ -33,4 +33,37 @@ describe "jambda" do
     input = '((if 1 > 2) 3 2)'
     expect(rep(input)).to eq 'true'
   end
+
+  specify "func declaration" do
+    input = '(fn (a b) (+ a b))'
+    expect(rep(input)).to match(/lambda\(.*\)/)
+  end
+
+  specify "func with no args" do
+    input = '((fn () 4))'
+    expect(rep(input)).to eq '4'
+  end
+
+  specify "calling func" do
+    input = '((fn (a b) (+ a b)) 3 2)'
+    expect(rep(input)).to eq '5'
+  end
+
+  specify "calling func with wrong arguments is error" do
+    input = '((fn (a b) (+ a b)) 3 2 4)'
+    expect { rep(input) }.to raise_error, 'wrong number of arguments (3 for 2)'
+  end
+
+  specify "functions are closures" do
+    input = '((let (a 10) (fn (x) (+ a x))) 32)'
+    expect(rep(input)).to eq '42'
+  end
+
+  specify "functions do not have access to caller's env" do
+    input = <<-JAMBDA
+    (let (f (fn () x))
+      (let (x 10) (f)))
+    JAMBDA
+    expect { rep(input) }.to raise_error, 'undefined symbol “x”'
+  end
 end
