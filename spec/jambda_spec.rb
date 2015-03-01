@@ -26,7 +26,7 @@ describe "jambda" do
 
   specify "getting func as value" do
     input = '>'
-    expect(rep(input)).to match /lambda\(.*>.*\)/
+    expect(rep(input)).to match(/lambda\(.*>.*\)/)
   end
 
   specify "if form in func position" do
