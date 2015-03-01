@@ -78,5 +78,10 @@ describe "reader" do
       input = '42; comment'
       expect(tokenize(input)).to eq %w[42]
     end
+
+    specify "consecutive symbol chars" do
+      input = '= > < * /'
+      expect(tokenize(input)).to eq %w[= > < * /]
+    end
   end
 end
