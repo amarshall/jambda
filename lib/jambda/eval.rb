@@ -24,12 +24,8 @@ class << Jambda::Eval
     end
     sym = sym.to_sym if sym.is_a?(String)
 
-    if sym == :let
-      nenv, nast = special_forms.let(env, args)
-      eval(nenv, nast)
-    elsif sym == :if
-      cond, if_true, if_false = args
-      eval(env, cond) ? eval(env, if_true) : eval(env, if_false)
+    if special_forms::LS.include?(sym)
+      special_forms.public_send(sym, env, args)
     elsif sym.is_a?(Proc)
       call_func(env, sym, args)
     else
