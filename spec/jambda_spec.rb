@@ -18,4 +18,9 @@ describe "jambda" do
     input = '(let (foo 42 bar 42) (- foo bar))'
     expect(rep(input)).to eq '0'
   end
+
+  specify "if condition" do
+    input = '(if (> 3 2) 42 0)'
+    expect(rep(input)).to eq '42'
+  end
 end

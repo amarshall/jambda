@@ -23,6 +23,9 @@ class << Jambda::Eval
     if sym == :let
       nenv, nast = special_forms.let(env, rest(ast))
       eval(nenv, nast)
+    elsif sym == :if
+      cond, if_true, if_false = rest(ast)
+      eval(env, cond) ? eval(env, if_true) : eval(env, if_false)
     elsif (func = env[sym]) && func.respond_to?(:call)
       args = args.map { |arg| eval(env, arg) }
       func.call(*args)
