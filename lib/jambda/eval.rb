@@ -9,30 +9,45 @@ class << Jambda::Eval
   include Jambda::Util
 
   def eval env, ast
-    if ast.is_a?(Enumerable) || ast.is_a?(String)
-      eval_ast(env, ast)
-    else
-      ast
+    freeze2(env); freeze2(ast)
+    case ast
+    when Enumerable then freeze2(eval_ast(env, ast))
+    when String then get_sym(env, ast)
+    else ast
     end
   end
 
-  def eval_ast env, ast
-    sym, *args = ast
+  def eval_ast env, (sym, *args)
     freeze2(args)
-    sym = sym.to_s.to_sym
+    if sym.is_a?(Enumerable)
+      sym = eval(env, sym)
+    end
+    sym = sym.to_sym if sym.is_a?(String)
+
     if sym == :let
-      nenv, nast = special_forms.let(env, rest(ast))
+      nenv, nast = special_forms.let(env, args)
       eval(nenv, nast)
     elsif sym == :if
-      cond, if_true, if_false = rest(ast)
+      cond, if_true, if_false = args
       eval(env, cond) ? eval(env, if_true) : eval(env, if_false)
-    elsif (func = env[sym]) && func.respond_to?(:call)
-      args = args.map { |arg| eval(env, arg) }
-      func.call(*args)
-    elsif val = env[sym]
-      val
+    elsif sym.is_a?(Proc)
+      call_func(env, sym, args)
     else
-      raise Jambda::Error, "undefined: #{sym}"
+      val = get_sym(env, sym)
+      val.respond_to?(:call) ? call_func(env, val, args) : val
+    end
+  end
+
+  def get_sym env, sym
+    env[sym.to_sym] or raise Jambda::Error, "symbol “#{sym}” undefined"
+  end
+
+  def call_func env, func, args
+    args = args.map { |arg| eval(env, arg) }
+    begin
+      func.call(*args)
+    rescue ArgumentError => ex
+      raise Jambda::Error, ex.message
     end
   end
 

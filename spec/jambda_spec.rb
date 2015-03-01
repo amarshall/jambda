@@ -23,4 +23,14 @@ describe "jambda" do
     input = '(if (> 3 2) 42 0)'
     expect(rep(input)).to eq '42'
   end
+
+  specify "getting func as value" do
+    input = '>'
+    expect(rep(input)).to match /lambda\(.*>.*\)/
+  end
+
+  specify "if form in func position" do
+    input = '((if 1 > 2) 3 2)'
+    expect(rep(input)).to eq 'true'
+  end
 end
