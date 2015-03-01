@@ -1,23 +1,15 @@
 require 'jambda'
+require 'jambda/util'
 
 module Jambda::Core
-  def + *args
-    args.reduce(:+)
-  end
+  extend Jambda::Util
 
-  def - *args
-    args.reduce(:-)
-  end
+  Env = freeze2({
+    :+ => ->(*args) { args.reduce(:+) },
+    :- => ->(*args) { args.reduce(:-) },
+    :* => ->(*args) { args.reduce(:*) },
+    :/ => ->(*args) { args.reduce(:/) },
 
-  def * *args
-    args.reduce(:*)
-  end
-
-  def / *args
-    args.reduce(:/)
-  end
-
-  def println *args
-    puts *args
-  end
+    :println => ->(*args) { puts *args },
+  })
 end
