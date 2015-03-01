@@ -10,6 +10,12 @@ module Jambda::Core
     :* => ->(*args) { args.reduce(:*) },
     :/ => ->(*args) { args.reduce(:/) },
 
+    :'=' => ->(*args) { args.reduce(:==) },
+    :>  => ->(a, b) { a > b },
+    :<  => ->(a, b) { a < b },
+    :>= => ->(a, b) { a >= b },
+    :<= => ->(a, b) { a <= b },
+
     :println => ->(*args) { puts *args },
   })
 end
