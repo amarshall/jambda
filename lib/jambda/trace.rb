@@ -11,7 +11,7 @@ class << Jambda::Trace
         nesting = point.binding.send(:caller)
           .grep(/lib\/jambda/)
           .reject { |s| s =~ /util/ }
-          .size - 6
+          .size
         lvars = point.binding.local_variables.each_with_object({}) do |lvar, h|
           val = point.binding.local_variable_get(lvar)
           next unless val
