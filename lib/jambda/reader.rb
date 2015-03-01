@@ -40,25 +40,4 @@ class << Jambda::Reader
       .map(&:strip).reject(&:empty?)
     freeze2(tokens)
   end
-
-  private def log
-    require 'coderay'
-    @trace ||= TracePoint.new(:call) do |point|
-      if point.defined_class == Jambda::Reader.singleton_class
-        nesting = point.binding.send(:caller).grep(/lib\/jambda/).size - 6
-        lvars = point.binding.local_variables.each_with_object({}) do |lvar, h|
-          val = point.binding.local_variable_get(lvar)
-          next unless val
-          h[lvar] = val
-        end
-        leader = nesting.times.map { |n| n.even? ? '│ ' : '╎ ' }.join
-        $stderr.puts "#{leader}#{point.method_id}: #{CodeRay.scan(lvars.inspect, :ruby).term}"
-      end
-    end
-
-    @trace.enable
-    result = yield
-    @trace.disable
-    result
-  end
 end
