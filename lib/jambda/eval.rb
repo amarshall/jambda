@@ -1,5 +1,6 @@
 require 'jambda'
 require 'jambda/core'
+require 'jambda/special_forms'
 require 'jambda/util'
 
 module Jambda::Eval; end
@@ -19,8 +20,8 @@ class << Jambda::Eval
     sym, *args = ast
     freeze2(args)
     sym = sym.to_s.to_sym
-    if sf = special_forms[sym]
-      nenv, nast = sf.call(env, rest(ast))
+    if sym == :let
+      nenv, nast = special_forms.let(env, rest(ast))
       eval(nenv, nast)
     elsif (func = env[sym]) && func.respond_to?(:call)
       args = args.map { |arg| eval(env, arg) }
@@ -37,6 +38,6 @@ class << Jambda::Eval
   end
 
   def special_forms
-    Jambda::Core::SpecialForms
+    Jambda::SpecialForms
   end
 end
