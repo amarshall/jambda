@@ -19,4 +19,9 @@ module Jambda::Util
     _, *xs = coll
     freeze2(xs)
   end
+
+  extend self
+  class << self
+    public :freeze2, :peek, :rest
+  end
 end

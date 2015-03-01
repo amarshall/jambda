@@ -48,7 +48,7 @@ class << Jambda::Eval
   end
 
   def kernel
-    Jambda::Core::Env
+    Jambda::Core
   end
 
   def special_forms

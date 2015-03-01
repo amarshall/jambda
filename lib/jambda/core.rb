@@ -1,21 +1,17 @@
 require 'jambda'
 require 'jambda/util'
 
-module Jambda::Core
-  extend Jambda::Util
+Jambda::Core = Jambda::Util.freeze2({
+  :+ => ->(*args) { args.reduce(:+) },
+  :- => ->(*args) { args.reduce(:-) },
+  :* => ->(*args) { args.reduce(:*) },
+  :/ => ->(*args) { args.reduce(:/) },
 
-  Env = freeze2({
-    :+ => ->(*args) { args.reduce(:+) },
-    :- => ->(*args) { args.reduce(:-) },
-    :* => ->(*args) { args.reduce(:*) },
-    :/ => ->(*args) { args.reduce(:/) },
+  :'=' => ->(*args) { args.reduce(:==) },
+  :>  => ->(a, b) { a > b },
+  :<  => ->(a, b) { a < b },
+  :>= => ->(a, b) { a >= b },
+  :<= => ->(a, b) { a <= b },
 
-    :'=' => ->(*args) { args.reduce(:==) },
-    :>  => ->(a, b) { a > b },
-    :<  => ->(a, b) { a < b },
-    :>= => ->(a, b) { a >= b },
-    :<= => ->(a, b) { a <= b },
-
-    :println => ->(*args) { puts(*args) },
-  })
-end
+  :println => ->(*args) { puts(*args) },
+})
