@@ -26,7 +26,7 @@ class << Jambda::REPL
   end
 
   def eval ast
-    Jambda::Eval.eval_ast(ast)
+    Jambda::Eval.eval(Jambda::Eval.kernel, ast)
   end
 
   def print ast

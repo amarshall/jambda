@@ -13,4 +13,9 @@ describe "jambda" do
     input = '(+ 1 (+ 2 3))'
     expect(rep(input)).to eq '6'
   end
+
+  specify "let-ing vars" do
+    input = '(let (foo 42 bar 42) (- foo bar))'
+    expect(rep(input)).to eq '0'
+  end
 end
