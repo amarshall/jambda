@@ -8,7 +8,11 @@ module Jambda::REPL; end
 class << Jambda::REPL
   def loop
     while line = Readline.readline('jambda> ', true)
-      printf "∎ %s\n", rep(line)
+      begin
+        printf "∎ %s\n", rep(line)
+      rescue Jambda::Error => ex
+        $stderr.puts "ERROR: #{ex.message}"
+      end
     end
   end
 
@@ -23,8 +27,6 @@ class << Jambda::REPL
 
   def eval ast
     Jambda::Eval.eval_ast(ast)
-  rescue Jambda::Error => ex
-    $stderr.puts "ERROR: #{ex.message}"
   end
 
   def print ast
