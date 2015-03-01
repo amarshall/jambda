@@ -16,6 +16,6 @@ module Jambda::Core
     :>= => ->(a, b) { a >= b },
     :<= => ->(a, b) { a <= b },
 
-    :println => ->(*args) { puts *args },
+    :println => ->(*args) { puts(*args) },
   })
 end
