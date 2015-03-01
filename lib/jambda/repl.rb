@@ -37,7 +37,7 @@ class << Jambda::REPL
     when String then ast
     when Numeric then ast.to_s
     when nil then ast.inspect
-    else '⸮⸮⸮'
+    else "⸮⸮⸮: #{ast.inspect}"
     end
   end
 end
