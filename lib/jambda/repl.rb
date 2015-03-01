@@ -36,6 +36,7 @@ class << Jambda::REPL
       "(#{inner})".freeze
     when String then ast
     when Numeric then ast.to_s
+    when Proc then "#<fn$#{object_id}>"
     else ast.inspect
     end
   end
