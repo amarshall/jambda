@@ -50,10 +50,12 @@ class << Jambda::Eval
   end
 
   def kernel
+    return @kernel.dup if @kernel
+
     stdlib = File.read(File.expand_path('../stdlib.lisp', __FILE__))
     env = Jambda::Core.dup
     eval(env, Jambda::Reader.read_str(stdlib))
-    env
+    @kernel = freeze2(env)
   end
 
   def special_forms
