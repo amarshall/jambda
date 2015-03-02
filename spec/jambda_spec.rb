@@ -66,4 +66,17 @@ describe "jambda" do
     JAMBDA
     expect { rep(input) }.to raise_error, 'undefined symbol “x”'
   end
+
+  specify "do multiple exps, returning last" do
+    input = '(do (println 1) (+ 1 3))'
+    begin
+      $stdout = stdout = StringIO.new
+      result = rep(input)
+    ensure
+      $stdout = STDOUT
+    end
+
+    expect(result).to eq '4'
+    expect(stdout.string).to eq "1\n"
+  end
 end

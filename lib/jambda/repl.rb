@@ -9,7 +9,7 @@ class << Jambda::REPL
   def loop
     while line = Readline.readline('jambda> ', true)
       begin
-        printf "∎ %s\n", rep(line)
+        $stdout.printf "∎ %s\n", rep(line)
       rescue Jambda::Error => ex
         $stderr.puts "ERROR: #{ex.message}"
       end

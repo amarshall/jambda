@@ -2,7 +2,7 @@ require 'jambda'
 require 'jambda/eval'
 
 module Jambda::SpecialForms
-  LS = %i[if fn let].freeze # since respond_to? includes lots of junk
+  LS = %i[do if fn let].freeze # since respond_to? includes lots of junk
 end
 
 class << Jambda::SpecialForms
@@ -18,6 +18,10 @@ class << Jambda::SpecialForms
       bindings = bindings.zip(args).flatten
       eval(env, let(env, [bindings, ast]))
     end
+  end
+
+  def do env, asts
+    asts.reduce(nil) { |_, ast| eval(env, ast) }
   end
 
   def let env, (bindings, ast)
