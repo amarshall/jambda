@@ -9,7 +9,7 @@ class << Jambda::Eval
   include Jambda::Util
 
   def eval env, ast
-    freeze2(env); freeze2(ast)
+    freeze2(ast)
     case ast
     when Enumerable then freeze2(eval_ast(env, ast))
     when String then get_sym(env, ast)
@@ -48,7 +48,7 @@ class << Jambda::Eval
   end
 
   def kernel
-    Jambda::Core
+    Jambda::Core.dup
   end
 
   def special_forms

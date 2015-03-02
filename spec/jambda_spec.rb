@@ -79,4 +79,14 @@ describe "jambda" do
     expect(result).to eq '4'
     expect(stdout.string).to eq "1\n"
   end
+
+  specify "defining vars to literals" do
+    input = '(do (def foo 10) (+ foo 1))'
+    expect(rep(input)).to eq '11'
+  end
+
+  specify "defining vars to funcs" do
+    input = '(do (def inc (fn (x) (+ 1 x))) (inc 10))'
+    expect(rep(input)).to eq '11'
+  end
 end

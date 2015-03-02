@@ -2,7 +2,7 @@ require 'jambda'
 require 'jambda/eval'
 
 module Jambda::SpecialForms
-  LS = %i[do if fn let].freeze # since respond_to? includes lots of junk
+  LS = %i[def do if fn let].freeze # since respond_to? includes lots of junk
 end
 
 class << Jambda::SpecialForms
@@ -18,6 +18,13 @@ class << Jambda::SpecialForms
       bindings = bindings.zip(args).flatten
       eval(env, let(env, [bindings, ast]))
     end
+  end
+
+  def def env, (sym, ast)
+    # TODO Can mutating env be avoided here? Env had to be unfrozen for this.
+    # Probably the only way would be to store env statefully somewhere.
+    env.merge!(sym.to_sym => eval(env, ast))
+    ast
   end
 
   def do env, asts
