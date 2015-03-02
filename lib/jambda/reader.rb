@@ -25,6 +25,7 @@ class << Jambda::Reader
     atom = peek(tokens)
     atom = case atom
            when /\A\d+\z/ then Integer(atom)
+           when /\A[\d.]+\z/ then Float(atom)
            when 'nil' then nil
            when 'false' then false
            when 'true' then true
@@ -39,7 +40,7 @@ class << Jambda::Reader
 
   def tokenize str
     tokens = str.gsub(/\s*;.*\z/, '')
-      .split(/(\b|\s|(?<=[()]))/)
+      .split(/(((?<![.])\b(?![.]))|\s|(?<=[()]))/)
       .map(&:strip).reject(&:empty?)
     freeze2(tokens)
   end

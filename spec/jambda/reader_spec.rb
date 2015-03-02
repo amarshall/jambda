@@ -30,6 +30,16 @@ describe "reader" do
       expect(read_str(input)).to eq [42]
     end
 
+    specify "a decimal literal" do
+      input = '3.14'
+      expect(read_str(input)).to eq [3.14]
+    end
+
+    specify "an invalid decimal literal" do
+      input = '3.14.15'
+      expect { read_str(input) }.to raise_error ArgumentError, /invalid value for Float/
+    end
+
     specify "a list" do
       input = '(1 2 3)'
       expect(read_str(input)).to eq [[1,2,3]]
