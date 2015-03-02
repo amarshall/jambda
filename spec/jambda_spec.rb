@@ -89,4 +89,9 @@ describe "jambda" do
     input = '(do (def inc (fn (x) (+ 1 x))) (inc 10))'
     expect(rep(input)).to eq '11'
   end
+
+  specify "stdlib accessible" do
+    input = '(inc 41)'
+    expect(rep(input)).to eq '42'
+  end
 end

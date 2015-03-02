@@ -24,7 +24,7 @@ class << Jambda::SpecialForms
     # TODO Can mutating env be avoided here? Env had to be unfrozen for this.
     # Probably the only way would be to store env statefully somewhere.
     env.merge!(sym.to_sym => eval(env, ast))
-    ast
+    nil
   end
 
   def do env, asts

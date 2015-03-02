@@ -28,6 +28,8 @@ class << Jambda::Eval
       special_forms.public_send(sym, env, args)
     elsif sym.is_a?(Proc)
       call_func(env, sym, args)
+    elsif sym == nil
+      nil
     else
       val = get_sym(env, sym)
       val.respond_to?(:call) ? call_func(env, val, args) : val
@@ -48,7 +50,10 @@ class << Jambda::Eval
   end
 
   def kernel
-    Jambda::Core.dup
+    stdlib = File.read(File.expand_path('../stdlib.lisp', __FILE__))
+    env = Jambda::Core.dup
+    eval(env, Jambda::Reader.read_str(stdlib))
+    env
   end
 
   def special_forms
