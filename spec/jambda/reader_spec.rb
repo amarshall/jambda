@@ -10,6 +10,21 @@ describe "reader" do
       expect(read_str(input)).to eq ['abc1']
     end
 
+    specify "nil literal" do
+      input = 'nil'
+      expect(read_str(input)).to eq [nil]
+    end
+
+    specify "false literal" do
+      input = 'false'
+      expect(read_str(input)).to eq [false]
+    end
+
+    specify "true literal" do
+      input = 'true'
+      expect(read_str(input)).to eq [true]
+    end
+
     specify "an integer literal" do
       input = '42'
       expect(read_str(input)).to eq [42]

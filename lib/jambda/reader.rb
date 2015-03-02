@@ -25,6 +25,9 @@ class << Jambda::Reader
     atom = peek(tokens)
     atom = case atom
            when /\A\d+\z/ then Integer(atom)
+           when 'nil' then nil
+           when 'false' then false
+           when 'true' then true
            else atom
            end
     [atom, rest(tokens)]
