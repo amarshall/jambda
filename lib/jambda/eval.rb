@@ -37,7 +37,7 @@ class << Jambda::Eval
   end
 
   def get_sym env, sym
-    env[sym.to_sym] or raise Jambda::Error, "symbol “#{sym}” undefined"
+    env[sym.to_sym] or raise Jambda::Error, "undefined symbol “#{sym}”"
   end
 
   def call_func env, func, args

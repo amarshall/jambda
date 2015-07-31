@@ -51,7 +51,7 @@ describe "jambda" do
 
   specify "calling func with wrong arguments is error" do
     input = '((fn (a b) (+ a b)) 3 2 4)'
-    expect { rep(input) }.to raise_error, 'wrong number of arguments (3 for 2)'
+    expect { rep(input) }.to raise_error 'wrong number of arguments (3 for 2)'
   end
 
   specify "functions are closures" do
@@ -64,7 +64,7 @@ describe "jambda" do
     (let (f (fn () x))
       (let (x 10) (f)))
     JAMBDA
-    expect { rep(input) }.to raise_error, 'undefined symbol “x”'
+    expect { rep(input) }.to raise_error 'undefined symbol “x”'
   end
 
   specify "do multiple exps, returning last" do
