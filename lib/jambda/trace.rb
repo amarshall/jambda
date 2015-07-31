@@ -33,6 +33,6 @@ Proc.send(:prepend, Module.new {
   def inspect
     file, lineno = source_location
     line = File.readlines(file).to_a[lineno - 1].strip
-    "#{self.lambda? ? 'lambda' : 'proc'}('#{line}')"
+    "<#{self.lambda? ? 'lambda' : 'proc'}('#{line}')>"
   end
 })
