@@ -5,7 +5,7 @@ class Jambda::List
   include Enumerable
 
   def initialize(elems)
-    @elems = elems
+    @elems = elems.to_a
     Jambda::Util.freeze2(self)
   end
 
