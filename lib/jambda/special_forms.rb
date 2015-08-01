@@ -13,12 +13,19 @@ class << Jambda::SpecialForms
 
   def fn env, (params, ast)
     params = Jambda::Util.freeze2(params)
+    if !params.is_a?(Enumerable)
+      raise Jambda::Error, 'missing binding form in fn'
+    end
     ->(*args) do # fn
       if args.size != params.size
         raise ArgumentError, "wrong number of arguments (#{args.size} for #{params.size})"
       end
       bindings = Jambda::Util.freeze2(params.zip(args).flatten)
-      eval(env, let(env, [bindings, ast]))
+      if ast
+        eval(env, let(env, [bindings, ast]))
+      else
+        nil
+      end
     end
   end
 

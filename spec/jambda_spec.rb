@@ -44,9 +44,24 @@ describe "jambda" do
     expect(rep(input)).to match(/^#<fn.*>$/)
   end
 
-  specify "func with no args" do
+  specify "func with empty args" do
     input = '((fn () 4))'
     expect(rep(input)).to eq '4'
+  end
+
+  specify "func with no body" do
+    input = '((fn ()))'
+    expect(rep(input)).to eq 'nil'
+  end
+
+  specify "func with no binding form" do
+    input = '((fn 42))'
+    expect { rep(input) }.to raise_error Jambda::Error, 'missing binding form in fn'
+  end
+
+  specify "func with no body or binding form" do
+    input = '((fn))'
+    expect { rep(input) }.to raise_error Jambda::Error, 'missing binding form in fn'
   end
 
   specify "calling func" do
