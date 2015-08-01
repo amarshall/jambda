@@ -36,8 +36,16 @@ class << Jambda::REPL
       "(#{inner})".freeze
     when String then ast
     when Numeric then ast.to_s
-    when Proc then "#<fn$#{object_id}>"
+    when Proc then "#<fn$#{fn_name(ast)}>"
     else ast.inspect
     end
+  end
+
+  private
+
+  def fn_name(fn)
+    symbol_pair = Jambda::Eval.kernel.detect { |k, v| v == fn }
+    name = symbol_pair && symbol_pair[0]
+    name || fn.object_id
   end
 end
