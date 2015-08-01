@@ -9,6 +9,16 @@ describe "core/stdlib fns" do
     expect(rep(input)).to eq '(4 1 2 3)'
   end
 
+  specify "conj" do
+    input = '(conj (list 1 2 3) 4)'
+    expect(rep(input)).to eq '(1 2 3 4)'
+  end
+
+  specify "map" do
+    input = '(map inc (list 3 1 4 1 5))'
+    expect(rep(input)).to eq '(4 2 5 2 6)'
+  end
+
   specify "reduce" do
     input = '(reduce + 0 (list 1 2 3 4))'
     expect(rep(input)).to eq '10'

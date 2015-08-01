@@ -6,4 +6,9 @@
                   (if (any? xs)
                     (reduce f (f memo (first xs)) (rest xs))
                     memo)))
+  (def map (fn (f xs)
+               (reduce
+                 (fn (acc x) (conj acc (f x)))
+                 (list)
+                 xs)))
   )

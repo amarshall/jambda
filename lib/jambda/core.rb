@@ -14,6 +14,7 @@ Jambda::Core = Jambda::Util.freeze2({
   :>= => ->(a, b) { a >= b },
   :<= => ->(a, b) { a <= b },
 
+  :conj => ->(xs, x) { Jambda::List.new([*xs, x]) },
   :cons => ->(x, xs) { Jambda::List.new([x, *xs]) },
   :list => ->(*xs) { Jambda::List.new(xs) },
   :list? => ->(x) { x.is_a?(Jambda::List) },
