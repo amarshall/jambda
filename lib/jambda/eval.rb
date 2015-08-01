@@ -11,6 +11,7 @@ class << Jambda::Eval
   def eval env, ast
     freeze2(ast)
     case ast
+    when Jambda::List then ast
     when Enumerable then freeze2(eval_ast(env, ast))
     when String then get_sym(env, ast)
     else ast

@@ -104,4 +104,9 @@ describe "jambda" do
     input = '(do (def tozero (fn (x) (if (<= x 0) x (tozero (dec x))))) (tozero 10))'
     expect(rep(input)).to eq '0'
   end
+
+  specify "reducing" do
+    input = '(reduce + 0 (list 1 2 3 4))'
+    expect(rep(input)).to eq '10'
+  end
 end
