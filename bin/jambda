@@ -1,4 +1,9 @@
 #!/usr/bin/env ruby
 
 require 'jambda/repl'
-Jambda::REPL.loop
+
+if $stdin.isatty
+  Jambda::REPL.loop
+else
+  Jambda::REPL.once
+end

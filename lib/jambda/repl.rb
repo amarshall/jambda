@@ -16,6 +16,10 @@ class << Jambda::REPL
     end
   end
 
+  def once
+    puts rep($stdin.read)
+  end
+
   def rep str
     print(eval(read(str)))
   end
