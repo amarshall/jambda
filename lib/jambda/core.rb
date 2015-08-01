@@ -22,7 +22,6 @@ Jambda::Core = Jambda::Util.freeze2({
   :count => ->(xs) { xs.size },
   :first => ->(xs) { xs.first },
   :rest => ->(xs) { xs[1..-1] },
-  :reduce => ->(func, initial, xs) {},
 
   :println => ->(*args) { puts(*args) },
 })
