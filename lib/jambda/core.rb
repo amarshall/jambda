@@ -16,7 +16,7 @@ Jambda::Core = Jambda::Util.freeze2({
 
   :cons => ->(x, xs) { Jambda::List.new([x, *xs]) },
   :list => ->(*xs) { Jambda::List.new(xs) },
-  :list? => ->(x) { x.is_a?(Enumberable) },
+  :list? => ->(x) { x.is_a?(Jambda::List) },
   :any? => ->(xs) { !xs.empty? },
   :empty? => ->(xs) { xs.empty? },
   :count => ->(xs) { xs.size },
