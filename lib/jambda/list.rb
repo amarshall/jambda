@@ -22,7 +22,11 @@ class Jambda::List
     wrap(@elems[index])
   end
 
-  Enumerable.instance_methods.each do |method|
+  def join(str)
+    @elems.join(str)
+  end
+
+  (Enumerable.instance_methods - %i[to_a]).each do |method|
     define_method(method) do |*args, &block|
       wrap(super(*args, &block))
     end
