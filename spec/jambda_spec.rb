@@ -94,4 +94,9 @@ describe "jambda" do
     input = '(inc 41)'
     expect(rep(input)).to eq '42'
   end
+
+  specify "recursion" do
+    input = '(do (def tozero (fn (x) (if (<= x 0) x (tozero (dec x))))) (tozero 10))'
+    expect(rep(input)).to eq '0'
+  end
 end

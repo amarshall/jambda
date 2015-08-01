@@ -10,12 +10,12 @@ class << Jambda::SpecialForms
     eval(env, cond) ? eval(env, if_true) : eval(env, if_false)
   end
 
-  def fn env, (bindings, ast)
-    ->(*args) do
-      if args.size != bindings.size
-        raise ArgumentError, "wrong number of arguments (#{args.size} for #{bindings.size})"
+  def fn env, (params, ast)
+    ->(*args) do # fn
+      if args.size != params.size
+        raise ArgumentError, "wrong number of arguments (#{args.size} for #{params.size})"
       end
-      bindings = bindings.zip(args).flatten
+      bindings = Jambda::Util.freeze2(params.zip(args).flatten)
       eval(env, let(env, [bindings, ast]))
     end
   end
