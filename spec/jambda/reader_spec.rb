@@ -55,11 +55,6 @@ describe "reader" do
       expect(read_str(input)).to eq [[]]
     end
 
-    specify "symbol with non-word, non-whitespace character" do
-      input = '(foo? bar! baz-qux)'
-      expect(read_str(input)).to eq [%w[foo? bar! baz-qux]]
-    end
-
     specify "unbalanced parens: unexpected close" do
       input = '1)'
       expect { read_str(input) }.to raise_error Jambda::Reader::Error, 'expected EOF but still had: “)”'
@@ -127,6 +122,11 @@ describe "reader" do
     specify "consecutive symbol chars" do
       input = '= > < * /'
       expect(tokenize(input)).to eq %w[= > < * /]
+    end
+
+    specify "symbol with word-boundaries" do
+      input = 'foo!-bar?*'
+      expect(tokenize(input)).to eq %w[foo!-bar?*]
     end
   end
 end
