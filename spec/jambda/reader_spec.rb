@@ -50,6 +50,11 @@ describe "reader" do
       expect(read_str(input)).to eq [[1,2,[3,[4,5]],6,7,8]]
     end
 
+    specify "an empty list" do
+      input = '()'
+      expect(read_str(input)).to eq [[]]
+    end
+
     specify "symbol with non-word, non-whitespace character" do
       input = '(foo? bar! baz-qux)'
       expect(read_str(input)).to eq [%w[foo? bar! baz-qux]]
@@ -57,13 +62,12 @@ describe "reader" do
 
     specify "unbalanced parens: unexpected close" do
       input = '1)'
-      expect { read_str(input) }.to raise_error Jambda::Reader::ParseError, 'unexpected “)”'
+      expect { read_str(input) }.to raise_error Jambda::Reader::ParseError, 'expected EOF but still had: “)”'
     end
 
     specify "unbalanced parens: missing close" do
-      pending 'not implemented'
       input = '(1 2 (3 4)'
-      expect { read_str(input) }.to raise_error Jambda::Reader::ParseError
+      expect { read_str(input) }.to raise_error Jambda::Reader::ParseError, 'missing “)” before EOF'
     end
   end
 

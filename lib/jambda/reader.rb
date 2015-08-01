@@ -9,28 +9,23 @@ class << Jambda::Reader
   include Jambda::Util
 
   def read_str str
-    ast, _ = read_form([].freeze, tokenize(str))
-    ast
+    ast, tokens = read_form([].freeze, tokenize(str))
+    if !tokens.empty?
+      raise Jambda::Reader::ParseError, "expected EOF but still had: “#{tokens.join(' ')}”"
+    end
+    [ast]
   end
 
-  def read_form ast, tokens, parens_depth = 0
-    until tokens.empty?
-      nast, ntokens = case peek(tokens)
-                      when '('
-                        parens_depth += 1
-                        read_list(rest(tokens))
-                      when ')'
-                        parens_depth -= 1
-                        raise Jambda::Reader::ParseError, 'unexpected “)”' if parens_depth < 0
-                        return freeze2([ast, rest(tokens)])
-                      when nil # TODO delete?
-                        raise Jambda::Reader::ParseError, 'unexpected nothingness'
-                      else freeze2(read_atom(tokens))
-                      end
-      ast += [nast]
-      tokens = ntokens
+  def read_form ast, tokens
+    case peek(tokens)
+    when '('
+      read_list(rest(tokens))
+    when ')'
+      raise Jambda::Reader::ParseError, 'unexpected “)”'
+    when nil # TODO delete?
+      raise Jambda::Reader::ParseError, 'unexpected nothingness'
+    else freeze2(read_atom(tokens))
     end
-    [ast, tokens]
   end
 
   def read_atom tokens
@@ -47,7 +42,17 @@ class << Jambda::Reader
   end
 
   def read_list tokens
-    read_form([].freeze, tokens, 1)
+    ast = [].freeze
+    until peek(tokens) == ')'
+      token = peek(tokens)
+      if !token
+        raise Jambda::Reader::ParseError, 'missing “)” before EOF'
+      end
+      nast, ntokens = read_form([].freeze, tokens)
+      ast += [nast]
+      tokens = ntokens
+    end
+    freeze2([ast, rest(tokens)])
   end
 
   def tokenize str
