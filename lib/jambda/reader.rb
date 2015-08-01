@@ -2,7 +2,7 @@ require 'jambda'
 require 'jambda/util'
 
 module Jambda::Reader
-  class ParseError < Jambda::Error; end
+  class Error < Jambda::Error; end
 end
 
 class << Jambda::Reader
@@ -11,7 +11,7 @@ class << Jambda::Reader
   def read_str str
     ast, tokens = read_form([].freeze, tokenize(str))
     if !tokens.empty?
-      raise Jambda::Reader::ParseError, "expected EOF but still had: “#{tokens.join(' ')}”"
+      raise Jambda::Reader::Error, "expected EOF but still had: “#{tokens.join(' ')}”"
     end
     [ast]
   end
@@ -21,9 +21,9 @@ class << Jambda::Reader
     when '('
       read_list(rest(tokens))
     when ')'
-      raise Jambda::Reader::ParseError, 'unexpected “)”'
+      raise Jambda::Reader::Error, 'unexpected “)”'
     when nil # TODO delete?
-      raise Jambda::Reader::ParseError, 'unexpected nothingness'
+      raise Jambda::Reader::Error, 'unexpected nothingness'
     else freeze2(read_atom(tokens))
     end
   end
@@ -46,7 +46,7 @@ class << Jambda::Reader
     until peek(tokens) == ')'
       token = peek(tokens)
       if !token
-        raise Jambda::Reader::ParseError, 'missing “)” before EOF'
+        raise Jambda::Reader::Error, 'missing “)” before EOF'
       end
       nast, ntokens = read_form([].freeze, tokens)
       ast += [nast]

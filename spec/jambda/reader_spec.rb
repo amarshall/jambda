@@ -62,12 +62,12 @@ describe "reader" do
 
     specify "unbalanced parens: unexpected close" do
       input = '1)'
-      expect { read_str(input) }.to raise_error Jambda::Reader::ParseError, 'expected EOF but still had: “)”'
+      expect { read_str(input) }.to raise_error Jambda::Reader::Error, 'expected EOF but still had: “)”'
     end
 
     specify "unbalanced parens: missing close" do
       input = '(1 2 (3 4)'
-      expect { read_str(input) }.to raise_error Jambda::Reader::ParseError, 'missing “)” before EOF'
+      expect { read_str(input) }.to raise_error Jambda::Reader::Error, 'missing “)” before EOF'
     end
   end
 
