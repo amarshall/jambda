@@ -56,9 +56,8 @@ describe "reader" do
     end
 
     specify "unbalanced parens: unexpected close" do
-      pending 'not implemented'
       input = '1)'
-      expect { read_str(input) }.to raise_error Jambda::Reader::ParseError
+      expect { read_str(input) }.to raise_error Jambda::Reader::ParseError, 'unexpected “)”'
     end
 
     specify "unbalanced parens: missing close" do

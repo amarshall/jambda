@@ -13,14 +13,24 @@ class << Jambda::Reader
     ast
   end
 
-  def read_form ast, tokens
-    nast, ntokens = case peek(tokens)
-                     when '(' then read_list(rest(tokens))
-                     when ')' then return freeze2([ast, rest(tokens)])
-                     when nil then return freeze2([ast, []])
-                     else read_atom(tokens)
-                     end
-    read_form(freeze2(ast + [nast]), ntokens)
+  def read_form ast, tokens, parens_depth = 0
+    until tokens.empty?
+      nast, ntokens = case peek(tokens)
+                      when '('
+                        parens_depth += 1
+                        read_list(rest(tokens))
+                      when ')'
+                        parens_depth -= 1
+                        raise Jambda::Reader::ParseError, 'unexpected “)”' if parens_depth < 0
+                        return freeze2([ast, rest(tokens)])
+                      when nil # TODO delete?
+                        raise Jambda::Reader::ParseError, 'unexpected nothingness'
+                      else freeze2(read_atom(tokens))
+                      end
+      ast += [nast]
+      tokens = ntokens
+    end
+    [ast, tokens]
   end
 
   def read_atom tokens
@@ -37,7 +47,7 @@ class << Jambda::Reader
   end
 
   def read_list tokens
-    read_form([].freeze, tokens)
+    read_form([].freeze, tokens, 1)
   end
 
   def tokenize str
