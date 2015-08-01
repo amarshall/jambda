@@ -38,6 +38,9 @@ class << Jambda::Eval
   end
 
   def get_sym env, sym
+    if !sym.respond_to?(:to_sym)
+      raise Jambda::Error, "invalid symbol “#{sym}”"
+    end
     env[sym.to_sym] or raise Jambda::Error, "undefined symbol “#{sym}”"
   end
 

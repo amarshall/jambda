@@ -14,6 +14,11 @@ describe "jambda" do
     expect(rep(input)).to eq '6'
   end
 
+  specify "attempting to call a non-symbol as function" do
+    input = '(42)'
+    expect { rep(input) }.to raise_error Jambda::Error, 'invalid symbol “42”'
+  end
+
   specify "let-ing vars" do
     input = '(let (foo 42 bar 42) (- foo bar))'
     expect(rep(input)).to eq '0'
