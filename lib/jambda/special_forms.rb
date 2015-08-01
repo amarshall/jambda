@@ -1,5 +1,6 @@
 require 'jambda'
 require 'jambda/eval'
+require 'jambda/util'
 
 module Jambda::SpecialForms
   LS = %i[def do if fn let].freeze # since respond_to? includes lots of junk
@@ -11,6 +12,7 @@ class << Jambda::SpecialForms
   end
 
   def fn env, (params, ast)
+    params = Jambda::Util.freeze2(params)
     ->(*args) do # fn
       if args.size != params.size
         raise ArgumentError, "wrong number of arguments (#{args.size} for #{params.size})"
