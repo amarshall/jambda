@@ -54,6 +54,18 @@ describe "reader" do
       input = '(foo? bar! baz-qux)'
       expect(read_str(input)).to eq [%w[foo? bar! baz-qux]]
     end
+
+    specify "unbalanced parens: unexpected close" do
+      pending 'not implemented'
+      input = '1)'
+      expect { read_str(input) }.to raise_error Jambda::Reader::ParseError
+    end
+
+    specify "unbalanced parens: missing close" do
+      pending 'not implemented'
+      input = '(1 2 (3 4)'
+      expect { read_str(input) }.to raise_error Jambda::Reader::ParseError
+    end
   end
 
   describe "tokenize" do

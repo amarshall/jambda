@@ -1,7 +1,9 @@
 require 'jambda'
 require 'jambda/util'
 
-module Jambda::Reader; end
+module Jambda::Reader
+  class ParseError < StandardError; end
+end
 
 class << Jambda::Reader
   include Jambda::Util
