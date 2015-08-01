@@ -95,6 +95,11 @@ describe "jambda" do
     expect(rep(input)).to eq '42'
   end
 
+  specify "evaluating function arguments before calling" do
+    input = '((fn (x y) (+ x y)) (+ 3 4) (* 5 6))'
+    expect(rep(input)).to eq '37'
+  end
+
   specify "recursion" do
     input = '(do (def tozero (fn (x) (if (<= x 0) x (tozero (dec x))))) (tozero 10))'
     expect(rep(input)).to eq '0'
