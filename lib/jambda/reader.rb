@@ -23,8 +23,9 @@ class << Jambda::Reader
     when ')'
       raise Jambda::Reader::Error, 'unexpected “)”'
     when "'"
-      nast, ntokens = read_form(rest(tokens))
-      [['quote', nast], ntokens]
+      wrap('quote', tokens)
+    when '`'
+      wrap('quasi-quote', tokens)
     when nil # TODO delete?
       raise Jambda::Reader::Error, 'unexpected nothingness'
     else freeze2(read_atom(tokens))
@@ -63,5 +64,10 @@ class << Jambda::Reader
       .split(/((?=[()])|\s|(?<=[()]))/)
       .map(&:strip).reject(&:empty?)
     freeze2(tokens)
+  end
+
+  private def wrap(sym, tokens)
+    nast, ntokens = read_form(rest(tokens))
+    [[sym, nast], ntokens]
   end
 end

@@ -69,6 +69,11 @@ describe "reader" do
       input = "'(1 2 3)"
       expect(read_str(input)).to eq [['quote', [1, 2, 3]]]
     end
+
+    specify "backtick -> quasi-quote" do
+      input = "`(1 2 3)"
+      expect(read_str(input)).to eq [['quasi-quote', [1, 2, 3]]]
+    end
   end
 
   describe "tokenize" do
