@@ -1,3 +1,8 @@
+require 'simplecov'
+SimpleCov.start do
+  coverage_dir 'tmp/coverage'
+end
+
 require 'jambda/util'
 
 RSpec.configure do |c|
