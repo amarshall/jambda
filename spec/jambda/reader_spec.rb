@@ -45,6 +45,16 @@ describe "reader" do
       expect(read_str(input)).to eq ['foobar']
     end
 
+    specify "a string with an escaped delimiting double-quote" do
+      input = '"foo\"bar"'
+      expect(read_str(input)).to eq ['foo"bar']
+    end
+
+    specify "a string with an escaped backslash" do
+      input = '"foo\\\\bar"'
+      expect(read_str(input)).to eq ['foo\bar']
+    end
+
     specify "two consecutive strings are read seperately" do
       input = '("foo" "bar")'
       expect(read_str(input)).to eq [['foo', 'bar']]
