@@ -9,14 +9,14 @@ class << Jambda::Reader
   include Jambda::Util
 
   def read_str str
-    ast, tokens = read_form([].freeze, tokenize(str))
+    ast, tokens = read_form(tokenize(str))
     if !tokens.empty?
       raise Jambda::Reader::Error, "expected EOF but still had: “#{tokens.join(' ')}”"
     end
     [ast]
   end
 
-  def read_form ast, tokens
+  def read_form tokens
     case peek(tokens)
     when '('
       read_list(rest(tokens))
@@ -48,7 +48,7 @@ class << Jambda::Reader
       if !token
         raise Jambda::Reader::Error, 'missing “)” before EOF'
       end
-      nast, ntokens = read_form([].freeze, tokens)
+      nast, ntokens = read_form(tokens)
       ast += [nast]
       tokens = ntokens
     end
