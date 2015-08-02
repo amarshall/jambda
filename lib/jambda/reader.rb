@@ -33,7 +33,7 @@ class << Jambda::Reader
     atom = case atom
            when /\A\d+\z/ then Integer(atom)
            when /\A[\d.]+\z/ then Float(atom)
-           when /\A"(.*)[^\\]?"\z/ then parse_str($1)
+           when /\A"(.*)[^\\]?"\z/ then parse_str(atom)
            when 'nil' then nil
            when 'false' then false
            when 'true' then true
@@ -64,7 +64,10 @@ class << Jambda::Reader
   end
 
   private def parse_str(str)
-    str.gsub(/(?<!\\)\\/, '')
+    str = str.dup
+    str.gsub!(/(\A"|"\z)/, '')
+    str.gsub!(/(?<!\\)\\/, '')
+    str.freeze
   end
 
   private def wrap(sym, tokens)
