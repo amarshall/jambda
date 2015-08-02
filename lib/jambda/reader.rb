@@ -26,6 +26,8 @@ class << Jambda::Reader
       wrap('quote', tokens)
     when '`'
       wrap('quasi-quote', tokens)
+    when '~'
+      wrap('unquote', tokens)
     when nil # TODO delete?
       raise Jambda::Reader::Error, 'unexpected nothingness'
     else freeze2(read_atom(tokens))

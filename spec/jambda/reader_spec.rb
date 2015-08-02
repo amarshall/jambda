@@ -74,6 +74,11 @@ describe "reader" do
       input = "`(1 2 3)"
       expect(read_str(input)).to eq [['quasi-quote', [1, 2, 3]]]
     end
+
+    specify "tilde -> unquote" do
+      input = "~(1 2 3)"
+      expect(read_str(input)).to eq [['unquote', [1, 2, 3]]]
+    end
   end
 
   describe "tokenize" do
