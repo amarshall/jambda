@@ -3,7 +3,7 @@ require 'jambda/eval'
 require 'jambda/util'
 
 module Jambda::SpecialForms
-  LS = %i[def do if fn let].freeze # since respond_to? includes lots of junk
+  LS = %i[def do if fn let quote quasi-quote].freeze # since respond_to? includes lots of junk
 end
 
 class << Jambda::SpecialForms
@@ -47,7 +47,30 @@ class << Jambda::SpecialForms
     eval(nenv, ast)
   end
 
+  def quasi_quote env, ast
+    return ast unless ast.is_a?(Enumerable)
+    ast = ast[0] if ast.size == 1
+
+    if util.peek(ast) == 'unquote'
+      eval(env, util.rest(ast)[0])
+    else
+      nast = ast.map { |child_ast| quasi_quote(env, child_ast) }
+      quote(env, nast)
+    end
+  end
+  alias_method :'quasi-quote', :quasi_quote
+
+  def quote env, ast
+    return ast unless ast.is_a?(Enumerable)
+    ast = ast[0] if ast.size == 1
+    Jambda::List.new(ast)
+  end
+
   private def eval(*args)
     Jambda::Eval.eval(*args)
+  end
+
+  private def util
+    Jambda::Util
   end
 end

@@ -124,4 +124,14 @@ describe "jambda" do
     input = '(do (def tozero (fn (x) (if (<= x 0) x (tozero (dec x))))) (tozero 10))'
     expect(rep(input)).to eq '0'
   end
+
+  specify "quote" do
+    input = '(quote ((+ 1 2) 4 5))'
+    expect(rep(input)).to eq '((+ 1 2) 4 5)'
+  end
+
+  specify "quasiquote unquote" do
+    input = '(quasi-quote (+ (unquote (+ 1 2)) 4 5))'
+    expect(rep(input)).to eq '(+ 3 4 5)'
+  end
 end
