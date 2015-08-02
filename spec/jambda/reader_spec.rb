@@ -64,6 +64,11 @@ describe "reader" do
       input = '(1 2 (3 4)'
       expect { read_str(input) }.to raise_error Jambda::Reader::Error, 'missing “)” before EOF'
     end
+
+    specify "apostrophe -> quote" do
+      input = "'(1 2 3)"
+      expect(read_str(input)).to eq [['quote', [1, 2, 3]]]
+    end
   end
 
   describe "tokenize" do

@@ -22,6 +22,9 @@ class << Jambda::Reader
       read_list(rest(tokens))
     when ')'
       raise Jambda::Reader::Error, 'unexpected “)”'
+    when "'"
+      nast, ntokens = read_form(rest(tokens))
+      [['quote', nast], ntokens]
     when nil # TODO delete?
       raise Jambda::Reader::Error, 'unexpected nothingness'
     else freeze2(read_atom(tokens))
