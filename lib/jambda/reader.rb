@@ -13,7 +13,7 @@ class << Jambda::Reader
     if !tokens.empty?
       raise Jambda::Reader::Error, "expected EOF but still had: “#{tokens.join(' ')}”"
     end
-    [ast]
+    freeze2([ast])
   end
 
   def read_form tokens
@@ -39,7 +39,7 @@ class << Jambda::Reader
            when 'true' then true
            else atom
            end
-    [atom, rest(tokens)]
+    freeze2([atom, rest(tokens)])
   end
 
   def read_list tokens
@@ -72,6 +72,6 @@ class << Jambda::Reader
 
   private def wrap(sym, tokens)
     nast, ntokens = read_form(rest(tokens))
-    [[sym, nast], ntokens]
+    freeze2([[sym, nast], ntokens])
   end
 end
