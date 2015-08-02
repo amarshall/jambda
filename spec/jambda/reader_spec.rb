@@ -40,6 +40,16 @@ describe "reader" do
       expect { read_str(input) }.to raise_error ArgumentError, /invalid value for Float/
     end
 
+    specify "a string literal" do
+      input = '"foobar"'
+      expect(read_str(input)).to eq ['foobar']
+    end
+
+    specify "two consecutive strings are read seperately" do
+      input = '("foo" "bar")'
+      expect(read_str(input)).to eq [['foo', 'bar']]
+    end
+
     specify "a list" do
       input = '(1 2 3)'
       expect(read_str(input)).to eq [[1,2,3]]

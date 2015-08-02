@@ -39,6 +39,7 @@ class << Jambda::Reader
     atom = case atom
            when /\A\d+\z/ then Integer(atom)
            when /\A[\d.]+\z/ then Float(atom)
+           when /\A"([^"]*)"\z/ then $1
            when 'nil' then nil
            when 'false' then false
            when 'true' then true
