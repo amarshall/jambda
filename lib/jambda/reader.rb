@@ -18,18 +18,12 @@ class << Jambda::Reader
 
   def read_form tokens
     case peek(tokens)
-    when '('
-      read_list(rest(tokens))
-    when ')'
-      raise Jambda::Reader::Error, 'unexpected “)”'
-    when "'"
-      wrap('quote', tokens)
-    when '`'
-      wrap('quasi-quote', tokens)
-    when '~'
-      wrap('unquote', tokens)
-    when nil # TODO delete?
-      raise Jambda::Reader::Error, 'unexpected nothingness'
+    when '(' then read_list(rest(tokens))
+    when ')' then raise Jambda::Reader::Error, 'unexpected “)”'
+    when "'" then wrap('quote', tokens)
+    when '`' then wrap('quasi-quote', tokens)
+    when '~' then wrap('unquote', tokens)
+    when nil then raise Jambda::Reader::Error, 'unexpected nothingness'
     else freeze2(read_atom(tokens))
     end
   end
