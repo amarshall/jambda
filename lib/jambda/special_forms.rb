@@ -12,7 +12,7 @@ class << Jambda::SpecialForms
   end
 
   def fn env, (params, ast)
-    params = Jambda::Util.freeze2(params)
+    params = util.freeze2(params)
     if !params.is_a?(Enumerable)
       raise Jambda::Error, 'missing binding form in fn'
     end
