@@ -154,6 +154,11 @@ describe "reader" do
       expect(tokenize(input)).to eq %w[42]
     end
 
+    specify "comments, content after" do
+      input = "42 ; comment\n 43"
+      expect(tokenize(input)).to eq %w[42 43]
+    end
+
     specify "consecutive symbol chars" do
       input = '= > < * /'
       expect(tokenize(input)).to eq %w[= > < * /]

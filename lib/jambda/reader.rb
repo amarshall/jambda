@@ -57,7 +57,7 @@ class << Jambda::Reader
   end
 
   def tokenize str
-    tokens = str.gsub(/\s*;.*\z/, '')
+    tokens = str.gsub(/\s*;.*$/, '')
       .split(/((?=[()])|\s|(?<=[()]))/)
       .map(&:strip).reject(&:empty?)
     freeze2(tokens)
