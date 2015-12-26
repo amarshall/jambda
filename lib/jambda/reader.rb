@@ -23,6 +23,7 @@ class << Jambda::Reader
     when "'" then wrap('quote', tokens)
     when '`' then wrap('quasi-quote', tokens)
     when '~' then wrap('unquote', tokens)
+    when '"' then read_str_literal(rest(tokens))
     when nil then raise Jambda::Reader::Error, 'unexpected nothingness'
     else freeze2(read_atom(tokens))
     end
@@ -33,7 +34,6 @@ class << Jambda::Reader
     atom = case atom
            when /\A\d+\z/ then Integer(atom)
            when /\A[\d.]+\z/ then Float(atom)
-           when /\A"(.*)[^\\]?"\z/ then parse_str_literal(atom)
            when 'nil' then nil
            when 'false' then false
            when 'true' then true
@@ -57,17 +57,26 @@ class << Jambda::Reader
   end
 
   def tokenize str
+    escape_char = /(?<!\\)\\/
+    split_between = /(?<!#{escape_char})[()"]/
+
     tokens = str.gsub(/\s*;.*$/, '')
-      .split(/((?=[()])|\s|(?<=[()]))/)
+      .split(/((?=#{split_between})|\s|(?<=#{split_between}))/)
       .map(&:strip).reject(&:empty?)
     freeze2(tokens)
   end
 
-  private def parse_str_literal(str)
-    str = str.dup
-    str.gsub!(/(\A"|"\z)/, '')
-    str.gsub!(/(?<!\\)\\/, '')
-    str.freeze
+  private def read_str_literal(tokens)
+    parts = []
+    until peek(tokens) == '"'
+      token = peek(tokens)
+      if !token
+        raise Jambda::Reader::Error, 'missing “"” before EOF'
+      end
+      parts << token.gsub('\\"', '"').gsub('\\\\', '\\')
+      tokens = rest(tokens)
+    end
+    freeze2([parts.join(' '), rest(tokens)])
   end
 
   private def wrap(sym, tokens)

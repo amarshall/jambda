@@ -45,14 +45,29 @@ describe "reader" do
       expect(read_str(input)).to eq ['foobar']
     end
 
+    specify "a string with whitespace" do
+      input = '"foo bar"'
+      expect(read_str(input)).to eq ['foo bar']
+    end
+
     specify "a string with an escaped delimiting double-quote" do
       input = '"foo\"bar"'
       expect(read_str(input)).to eq ['foo"bar']
     end
 
     specify "a string with an escaped backslash" do
-      input = '"foo\\\\bar"'
-      expect(read_str(input)).to eq ['foo\bar']
+      input = '"foo\\\\"'
+      expect(read_str(input)).to eq ['foo\\']
+    end
+
+    specify "an invalid string literal (no closing quote)" do
+      input = '"foo'
+      expect { read_str(input) }.to raise_error Jambda::Reader::Error, 'missing “"” before EOF'
+    end
+
+    specify "an invalid string literal (terminates with escaped quote)" do
+      input = '"foo\"'
+      expect { read_str(input) }.to raise_error Jambda::Reader::Error, 'missing “"” before EOF'
     end
 
     specify "two consecutive strings are read seperately" do
@@ -117,6 +132,21 @@ describe "reader" do
     specify "multiple whitespace" do
       input = '  abc1  123a  '
       expect(tokenize(input)).to eq %w[abc1 123a]
+    end
+
+    specify "a string" do
+      input = '"foo bar"'
+      expect(tokenize(input)).to eq %w[" foo bar "]
+    end
+
+    specify "escaped double quote" do
+      input = 'foo\"bar'
+      expect(tokenize(input)).to eq %w[foo\"bar]
+    end
+
+    specify "escaped backslash, then double quote" do
+      input = '"foo\\\"'
+      expect(tokenize(input)).to eq ['"', 'foo\\\\', '"']
     end
 
     specify "empty list" do
