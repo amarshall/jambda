@@ -49,7 +49,9 @@ class << Jambda::Eval
     begin
       func.call(*args)
     rescue ArgumentError => ex
-      raise Jambda::Error, ex.message
+      new_ex = Jambda::Error.new(ex.message)
+      new_ex.set_backtrace(ex.backtrace)
+      raise new_ex
     end
   end
 
