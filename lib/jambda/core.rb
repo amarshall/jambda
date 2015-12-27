@@ -1,5 +1,6 @@
 require 'jambda'
 require 'jambda/list'
+require 'jambda/string'
 require 'jambda/util'
 
 Jambda::Core = Jambda::Util.freeze2({
@@ -23,6 +24,7 @@ Jambda::Core = Jambda::Util.freeze2({
   :count => ->(xs) { xs.size },
   :first => ->(xs) { xs.first },
   :rest => ->(xs) { xs[1..-1] },
+  :string => ->(xs) { Jambda::String.new(xs.join(' ')) },
 
   :println => ->(*args) { puts(*args) },
 })

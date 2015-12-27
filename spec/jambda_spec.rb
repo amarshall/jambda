@@ -134,4 +134,9 @@ describe "jambda" do
     input = '(quasi-quote (+ (unquote (+ 1 2)) 4 5))'
     expect(rep(input)).to eq '(+ 3 4 5)'
   end
+
+  specify "strings" do
+    input = '"foo"'
+    expect(rep(input)).to eq '"foo"'
+  end
 end

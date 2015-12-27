@@ -1,4 +1,5 @@
 require 'jambda'
+require 'jambda/string'
 require 'jambda/util'
 
 module Jambda::Reader
@@ -76,7 +77,7 @@ class << Jambda::Reader
       parts << token.gsub('\\"', '"').gsub('\\\\', '\\')
       tokens = rest(tokens)
     end
-    freeze2([parts.join(' '), rest(tokens)])
+    freeze2([['string', ['quote', parts]], rest(tokens)])
   end
 
   private def wrap(sym, tokens)

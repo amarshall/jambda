@@ -40,39 +40,45 @@ describe "reader" do
       expect { read_str(input) }.to raise_error ArgumentError, /invalid value for Float/
     end
 
-    specify "a string literal" do
-      input = '"foobar"'
-      expect(read_str(input)).to eq ['foobar']
-    end
+    describe "string literals" do
+      def str_wrap(expected_str)
+        ['string', ['quote', expected_str.split(' ')]]
+      end
 
-    specify "a string with whitespace" do
-      input = '"foo bar"'
-      expect(read_str(input)).to eq ['foo bar']
-    end
+      specify "a simple string literal" do
+        input = '"foobar"'
+        expect(read_str(input)).to eq [str_wrap('foobar')]
+      end
 
-    specify "a string with an escaped delimiting double-quote" do
-      input = '"foo\"bar"'
-      expect(read_str(input)).to eq ['foo"bar']
-    end
+      specify "a string with whitespace" do
+        input = '"foo bar"'
+        expect(read_str(input)).to eq [str_wrap('foo bar')]
+      end
 
-    specify "a string with an escaped backslash" do
-      input = '"foo\\\\"'
-      expect(read_str(input)).to eq ['foo\\']
-    end
+      specify "a string with an escaped delimiting double-quote" do
+        input = '"foo\"bar"'
+        expect(read_str(input)).to eq [str_wrap('foo"bar')]
+      end
 
-    specify "an invalid string literal (no closing quote)" do
-      input = '"foo'
-      expect { read_str(input) }.to raise_error Jambda::Reader::Error, 'missing “"” before EOF'
-    end
+      specify "a string with an escaped backslash" do
+        input = '"foo\\\\"'
+        expect(read_str(input)).to eq [str_wrap('foo\\')]
+      end
 
-    specify "an invalid string literal (terminates with escaped quote)" do
-      input = '"foo\"'
-      expect { read_str(input) }.to raise_error Jambda::Reader::Error, 'missing “"” before EOF'
-    end
+      specify "an invalid string literal (no closing quote)" do
+        input = '"foo'
+        expect { read_str(input) }.to raise_error Jambda::Reader::Error, 'missing “"” before EOF'
+      end
 
-    specify "two consecutive strings are read seperately" do
-      input = '("foo" "bar")'
-      expect(read_str(input)).to eq [['foo', 'bar']]
+      specify "an invalid string literal (terminates with escaped quote)" do
+        input = '"foo\"'
+        expect { read_str(input) }.to raise_error Jambda::Reader::Error, 'missing “"” before EOF'
+      end
+
+      specify "two consecutive strings are read seperately" do
+        input = '("foo" "bar")'
+        expect(read_str(input)).to eq [[str_wrap('foo'), str_wrap('bar')]]
+      end
     end
 
     specify "a list" do
