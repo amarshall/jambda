@@ -9,6 +9,7 @@ class << Jambda::Eval
   include Jambda::Util
 
   def eval env, ast
+    freeze2(env)
     freeze2(ast)
     case ast
     when Jambda::List then ast
@@ -18,7 +19,7 @@ class << Jambda::Eval
     end
   end
 
-  def eval_ast env, (sym, *args)
+  private def eval_ast env, (sym, *args)
     freeze2(args)
     if sym.is_a?(Enumerable)
       sym = eval(env, sym)
@@ -41,7 +42,9 @@ class << Jambda::Eval
     if !sym.respond_to?(:to_sym)
       raise Jambda::Error, "invalid symbol “#{sym}”"
     end
-    env[sym.to_sym] or raise Jambda::Error, "undefined symbol “#{sym}”"
+    sym = sym.to_sym
+    val = env[sym] || world[sym]
+    val or raise Jambda::Error, "undefined symbol “#{sym}”"
   end
 
   def call_func env, func, args
@@ -55,17 +58,14 @@ class << Jambda::Eval
     end
   end
 
-  def kernel
-    return @kernel if @kernel
+  def world
+    @world = @kernel if @kernel && !@world
+    return @world if @world
 
-    stdlib = File.read(File.expand_path('../stdlib.lisp', __FILE__))
-    env = Jambda::Core.dup
-    eval(env, Jambda::Reader.read_str(stdlib))
-    @kernel = env
-  end
-
-  def env
-    @env ||= kernel.dup
+    @world = Jambda::Core.dup
+    load_stdlib
+    @kernel = @world.dup
+    @world
   end
 
   def special_forms
@@ -73,6 +73,11 @@ class << Jambda::Eval
   end
 
   def reset!
-    @env = nil
+    @world = nil
+  end
+
+  private def load_stdlib
+    stdlib_filename = File.expand_path('../stdlib.lisp', __FILE__)
+    Jambda::SpecialForms.load({}, stdlib_filename)
   end
 end

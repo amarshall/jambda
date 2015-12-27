@@ -110,6 +110,11 @@ describe "jambda" do
     expect(rep(input)).to eq '11'
   end
 
+  specify "defs are accessible everywhere" do
+    input = '(do (let (x 42) (def f (fn (y) (+ x y)))) (f 10))'
+    expect(rep(input)).to eq '52'
+  end
+
   specify "stdlib accessible" do
     input = '(inc 41)'
     expect(rep(input)).to eq '42'

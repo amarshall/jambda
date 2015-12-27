@@ -30,14 +30,17 @@ class << Jambda::SpecialForms
   end
 
   def def env, (sym, ast)
-    # TODO Can mutating env be avoided here? Env had to be unfrozen for this.
-    # Probably the only way would be to store env statefully somewhere.
-    env.merge!(sym.to_sym => eval(env, ast))
+    Jambda::Eval.world.merge!(sym.to_sym => eval(env, ast))
     nil
   end
 
   def do env, asts
     asts.reduce(nil) { |_, ast| eval(env, ast) }
+  end
+
+  def load(env, filename)
+    contents = File.read(filename)
+    eval({}, Jambda::Reader.read_str(contents))
   end
 
   def let env, (bindings, ast)
