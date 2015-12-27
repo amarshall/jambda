@@ -12,6 +12,9 @@ class << Jambda::REPL
         $stdout.printf "∎ %s\n", rep(line)
       rescue Jambda::Error => ex
         $stderr.puts "ERROR: #{ex.message}"
+        ex.backtrace.each do |bt_line|
+          $stderr.puts "  #{bt_line}"
+        end
       end
     end
   end
