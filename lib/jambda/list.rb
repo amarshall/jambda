@@ -22,7 +22,7 @@ class Jambda::List
     wrap(@elems[index])
   end
 
-  def join(str)
+  def join(str = '')
     @elems.join(str)
   end
 

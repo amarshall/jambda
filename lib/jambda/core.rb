@@ -24,7 +24,7 @@ Jambda::Core = Jambda::Util.freeze2({
   :count => ->(xs) { xs.size },
   :first => ->(xs) { xs.first },
   :rest => ->(xs) { xs[1..-1] },
-  :string => ->(xs) { Jambda::String.new(xs.join(' ')) },
+  :string => ->(xs = []) { Jambda::String.new(xs.join) },
 
   :println => ->(*args) { puts(*args) },
 })
