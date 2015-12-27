@@ -62,7 +62,15 @@ class << Jambda::Eval
     @kernel = env
   end
 
+  def env
+    @env ||= kernel.dup
+  end
+
   def special_forms
     Jambda::SpecialForms
+  end
+
+  def reset!
+    @env = nil
   end
 end

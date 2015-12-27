@@ -30,7 +30,7 @@ class << Jambda::REPL
   end
 
   def eval ast
-    Jambda::Eval.eval(Jambda::Eval.kernel, ast)
+    Jambda::Eval.eval(Jambda::Eval.env, ast)
   end
 
   def print ast
@@ -48,7 +48,7 @@ class << Jambda::REPL
   private
 
   def fn_name(fn)
-    symbol_pair = Jambda::Eval.kernel.detect { |k, v| v == fn }
+    symbol_pair = Jambda::Eval.env.detect { |k, v| v == fn }
     name = symbol_pair && symbol_pair[0]
     name || fn.object_id
   end
