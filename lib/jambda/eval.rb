@@ -1,4 +1,5 @@
 require 'jambda'
+require 'jambda/backtrace_filter'
 require 'jambda/core'
 require 'jambda/special_forms'
 require 'jambda/util'
@@ -51,9 +52,10 @@ class << Jambda::Eval
     args = args.map { |arg| eval(env, arg) }
     begin
       func.call(*args)
-    rescue ArgumentError => ex
+    rescue Jambda::Error => ex
       new_ex = Jambda::Error.new(ex.message)
-      new_ex.set_backtrace(ex.backtrace)
+      trace = Jambda::BacktraceFilter.(ex.backtrace)
+      new_ex.set_backtrace(trace)
       raise new_ex
     end
   end
