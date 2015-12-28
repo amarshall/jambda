@@ -10,6 +10,9 @@ class << Jambda::Eval
   include Jambda::Util
 
   def eval env, ast
+    unless env.has_key?(:backtrace)
+      env = env.merge(backtrace: [])
+    end
     freeze2(env)
     freeze2(ast)
     case ast
@@ -41,19 +44,22 @@ class << Jambda::Eval
 
   def get_sym env, sym
     if !sym.respond_to?(:to_sym)
-      raise Jambda::Error, "invalid symbol “#{sym}”"
+      raise Jambda::Error.new("invalid symbol “#{sym}”", env[:backtrace])
     end
     sym = sym.to_sym
     val = env[sym] || world[sym]
-    val or raise Jambda::Error, "undefined symbol “#{sym}”"
+    val or raise Jambda::Error.new("undefined symbol “#{sym}”", env[:backtrace])
   end
 
   def call_func env, func, args
-    args = args.map { |arg| eval(env, arg) }
+    name = func.respond_to?(:jambda_name) ? func.jambda_name : '(anon fn)'
+    nenv = freeze2(env.merge(backtrace: (env[:backtrace] + [name])))
+
+    args = args.map { |arg| eval(nenv, arg) }
     begin
       func.call(*args)
     rescue Jambda::Error => ex
-      new_ex = Jambda::Error.new(ex.message)
+      new_ex = Jambda::Error.new(ex.message, nenv[:backtrace] + ex.jambda_trace)
       trace = Jambda::BacktraceFilter.(ex.backtrace)
       new_ex.set_backtrace(trace)
       raise new_ex

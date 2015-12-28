@@ -3,7 +3,11 @@ require 'jambda/string'
 require 'jambda/util'
 
 module Jambda::Reader
-  class Error < Jambda::Error; end
+  class Error < Jambda::Error
+    def initialize(message)
+      super(message, [].freeze)
+    end
+  end
 end
 
 class << Jambda::Reader

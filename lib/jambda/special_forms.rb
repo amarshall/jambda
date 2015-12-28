@@ -14,11 +14,11 @@ class << Jambda::SpecialForms
   def fn env, (params, ast)
     params = util.freeze2(params)
     if !params.is_a?(Enumerable)
-      raise Jambda::Error, 'missing binding form in fn'
+      raise Jambda::Error.new('missing binding form in fn', env[:backtrace])
     end
     ->(*args) do # fn
       if args.size != params.size
-        raise ArgumentError, "wrong number of arguments (#{args.size} for #{params.size})"
+        raise Jambda::Error.new("wrong number of arguments (#{args.size} for #{params.size})", env[:backtrace])
       end
       bindings = Jambda::Util.freeze2(params.zip(args).flatten)
       if ast
@@ -30,7 +30,14 @@ class << Jambda::SpecialForms
   end
 
   def def env, (sym, ast)
-    Jambda::Eval.world.merge!(sym.to_sym => eval(env, ast))
+    val = eval(env, ast)
+    if val.is_a?(Proc)
+      val = val.dup
+      val.define_singleton_method(:jambda_name) { sym }
+      val.freeze
+    end
+    Jambda::Eval.world.merge!(sym.to_sym => val)
+
     nil
   end
 
