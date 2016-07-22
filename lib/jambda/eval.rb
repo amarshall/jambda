@@ -73,12 +73,12 @@ class << Jambda::Eval
   end
 
   def world
-    @world = @kernel if @kernel && !@world
+    @world = @kernel.dup if @kernel && !@world
     return @world if @world
 
     @world = Jambda::Core.dup
     load_stdlib
-    @kernel = @world.dup
+    @kernel = freeze2(@world.dup)
     @world
   end
 
