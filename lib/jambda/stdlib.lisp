@@ -17,4 +17,6 @@
                     (fn (acc x) (if (f x) (conj acc x) acc))
                     (list)
                     xs)))
+
+  (def remove (fn (f xs) (filter (fn (x) (not (f x))) xs)))
   )
