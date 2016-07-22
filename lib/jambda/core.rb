@@ -8,6 +8,7 @@ Jambda::Core = Jambda::Util.freeze2({
   :- => ->(*args) { args.reduce(:-) },
   :* => ->(*args) { args.reduce(:*) },
   :/ => ->(*args) { args.reduce(:/) },
+  :% => ->(a, b) { a % b },
 
   :'=' => ->(*args) { args.reduce(:==) },
   :>  => ->(a, b) { a > b },
