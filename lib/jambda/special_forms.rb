@@ -3,12 +3,18 @@ require 'jambda/eval'
 require 'jambda/util'
 
 module Jambda::SpecialForms
-  LS = %i[def do if fn let quote quasi-quote].freeze # since respond_to? includes lots of junk
+  LS = %i[debug def do if fn let quote quasi-quote].freeze # since respond_to? includes lots of junk
 end
 
 class << Jambda::SpecialForms
   def if env, (cond, if_true, if_false)
     eval(env, cond) ? eval(env, if_true) : eval(env, if_false)
+  end
+
+  def debug(env, _)
+    require 'pry'
+    binding.pry
+    nil
   end
 
   def fn env, (params, ast)
