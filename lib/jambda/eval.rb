@@ -10,6 +10,7 @@ class << Jambda::Eval
   include Jambda::Util
 
   def eval env, ast
+    load_world
     unless env.has_key?(:backtrace)
       env = env.merge(backtrace: [])
     end
@@ -47,8 +48,13 @@ class << Jambda::Eval
       raise Jambda::Error.new("invalid symbol “#{sym}”", env[:backtrace])
     end
     sym = sym.to_sym
-    val = env[sym] || world[sym]
-    val or raise Jambda::Error.new("undefined symbol “#{sym}”", env[:backtrace])
+    if env.has_key?(sym)
+      env[sym]
+    elsif world.has_key?(sym)
+      world[sym]
+    else
+      raise Jambda::Error.new("undefined symbol “#{sym}”", env[:backtrace])
+    end
   end
 
   def call_func env, func, args
@@ -75,6 +81,9 @@ class << Jambda::Eval
     @kernel = @world.dup
     @world
   end
+
+  alias_method :load_world, :world
+  private :load_world
 
   def special_forms
     Jambda::SpecialForms
