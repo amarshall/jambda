@@ -149,4 +149,14 @@ describe "jambda" do
     input = '"foo"'
     expect(rep(input)).to eq '"foo"'
   end
+
+  specify "nil is let-able" do
+    input = '(let (x nil) x)'
+    expect(rep(input)).to eq 'nil'
+  end
+
+  specify "nil is def-able" do
+    input = '(do (def x nil) x)'
+    expect(rep(input)).to eq 'nil'
+  end
 end
