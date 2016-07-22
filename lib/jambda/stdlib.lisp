@@ -11,4 +11,10 @@
                  (fn (acc x) (conj acc (f x)))
                  (list)
                  xs)))
+
+  (def filter (fn (f xs)
+                  (reduce
+                    (fn (acc x) (if (f x) (conj acc x) acc))
+                    (list)
+                    xs)))
   )
