@@ -29,6 +29,11 @@ describe "jambda" do
     expect(rep(input)).to eq '42'
   end
 
+  specify "if with no negative case" do
+    input = '(if (= 3 2) 42)'
+    expect(rep(input)).to eq 'nil'
+  end
+
   specify "getting func as value" do
     input = '>'
     expect(rep(input)).to match(/^#<fn.*>$/)
