@@ -28,4 +28,5 @@ Jambda::Core = Jambda::Util.freeze2({
   :string => ->(xs = []) { Jambda::String.new(xs.join) },
 
   :println => ->(*args) { puts(*args) },
+  :slurp => ->(fname) { Jambda::String.new(File.read(fname.to_s)) },
 })
