@@ -4,7 +4,7 @@ A portmanteau of “JAM” and “lambda”, this is JAM’s Lisp. This is an ex
 
 ## Usage
 
-    ruby -Ilib bin/jambda
+    bin/jambda
     jambda> (1 2 3)
     (1 2 3)
 
