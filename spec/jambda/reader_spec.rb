@@ -42,7 +42,7 @@ describe "reader" do
 
     describe "string literals" do
       def str_wrap(expected_str)
-        ['string', ['quote', expected_str.split(' ')]]
+        ['string', ['quote', [expected_str]]]
       end
 
       specify "a simple string literal" do

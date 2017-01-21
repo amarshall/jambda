@@ -146,8 +146,8 @@ describe "jambda" do
   end
 
   specify "strings" do
-    input = '"foo"'
-    expect(rep(input)).to eq '"foo"'
+    input = '"foo bar"'
+    expect(rep(input)).to eq '"foo bar"'
   end
 
   specify "nil is let-able" do
