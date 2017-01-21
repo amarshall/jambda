@@ -1,6 +1,7 @@
 require 'jambda'
 require 'jambda/backtrace_filter'
 require 'jambda/core'
+require 'jambda/error'
 require 'jambda/special_forms'
 require 'jambda/util'
 

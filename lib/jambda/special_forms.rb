@@ -1,4 +1,5 @@
 require 'jambda'
+require 'jambda/error'
 require 'jambda/eval'
 require 'jambda/util'
 
