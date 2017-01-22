@@ -1,4 +1,5 @@
 require 'jambda'
+require 'jambda/eval'
 require 'jambda/list'
 require 'jambda/string'
 require 'jambda/util'
@@ -29,4 +30,8 @@ Jambda::Core = Jambda::Util.freeze2({
 
   :println => ->(*args) { puts(*args) },
   :slurp => ->(fname) { Jambda::String.new(File.read(fname.to_s)) },
+
+  :eval => ->(str) do
+    Jambda::Eval.eval(Jambda::Eval.world, Jambda::Reader.read_str(str.to_s).first)
+  end,
 })

@@ -4,6 +4,13 @@ require 'jambda/repl'
 describe 'jambda/core' do
   refer Jambda::REPL, :rep
 
+  describe "eval()" do
+    specify "evaluates the given Jambda string" do
+      input = '(eval "(+ 1 2 3)")'
+      expect(rep(input)).to eq '6'
+    end
+  end
+
   describe "slurp()" do
     let(:file) { Tempfile.new }
     after { file.close; file.unlink }
