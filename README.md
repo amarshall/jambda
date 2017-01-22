@@ -16,4 +16,4 @@ One naming convention used throughout the code is `nast` and `ntokens`; this is 
 
 ## Credits & License
 
-Copyright © 2015–2017 J. Andrew Marshall. All rights reserved.
+Copyright © 2015–2017 J. Andrew Marshall. License is available in the LICENSE file.
