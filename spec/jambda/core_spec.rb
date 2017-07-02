@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'tempfile'
 require 'jambda/repl'
 
 describe 'jambda/core' do
