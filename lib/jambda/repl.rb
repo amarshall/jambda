@@ -26,7 +26,7 @@ class << Jambda::REPL
   end
 
   def once
-    puts rep($stdin.read)
+    eval(read($stdin.read))
   end
 
   def rep str
