@@ -1,0 +1,7 @@
+[package]
+name = "jambda"
+version = "0.1.0"
+authors = ["Andrew Marshall <andrew@johnandrewmarshall.com>"]
+
+[dependencies]
+rustyline = "1.0.0"
