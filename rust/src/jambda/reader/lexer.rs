@@ -4,12 +4,15 @@ use regex;
 pub enum Token {
   LParen,
   RParen,
+  Newline,
   Separator(String),
   Whitespace(String),
   Word(String),
 }
 
 const REGEX: &str = r###"(?x)(
+(?P<newline>\n)
+|
 (?P<whitespace>\s+)
 |
 (?P<separator>[\\,;"])
@@ -32,6 +35,8 @@ pub fn tokenize(str: &str) -> Vec<Token> {
     let token = if captures.name("whitespace").is_some() {
       let capture = captures.name("whitespace");
       Token::Whitespace(capture_to_string(capture))
+    } else if captures.name("newline").is_some() {
+      Token::Newline
     } else if captures.name("separator").is_some() {
       let capture = captures.name("separator");
       Token::Separator(capture_to_string(capture))
@@ -231,7 +236,8 @@ mod tests {
       Token::Separator(";".to_string()),
       Token::Whitespace(" ".to_string()),
       Token::Word("comment".to_string()),
-      Token::Whitespace("\n ".to_string()),
+      Token::Newline,
+      Token::Whitespace(" ".to_string()),
       Token::Word("43".to_string()),
     ])
   }
