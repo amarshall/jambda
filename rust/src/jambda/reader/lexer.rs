@@ -1,13 +1,31 @@
 use regex;
+use std;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Token {
+  Backslash,
+  DoubleQuote,
   LParen,
-  RParen,
   Newline,
-  Separator(String),
+  RParen,
+  Semicolon,
   Whitespace(String),
   Word(String),
+}
+
+impl std::string::ToString for Token {
+  fn to_string(&self) -> String {
+    match *self {
+      Token::Backslash => "\\".to_string(),
+      Token::DoubleQuote => "\"".to_string(),
+      Token::Semicolon => ";".to_string(),
+      Token::LParen => "(".to_string(),
+      Token::RParen => "(".to_string(),
+      Token::Newline => "\n".to_string(),
+      Token::Whitespace(ref val) => val.to_string(),
+      Token::Word(ref val) => val.to_string(),
+    }
+  }
 }
 
 const REGEX: &str = r###"(?x)(
@@ -15,7 +33,11 @@ const REGEX: &str = r###"(?x)(
 |
 (?P<whitespace>\s+)
 |
-(?P<separator>[\\,;"])
+(?P<backslash>[\\])
+|
+(?P<semicolon>[;])
+|
+(?P<doublequote>["])
 |
 (?P<lparen>[(])
 |
@@ -37,9 +59,12 @@ pub fn tokenize(str: &str) -> Vec<Token> {
       Token::Whitespace(capture_to_string(capture))
     } else if captures.name("newline").is_some() {
       Token::Newline
-    } else if captures.name("separator").is_some() {
-      let capture = captures.name("separator");
-      Token::Separator(capture_to_string(capture))
+    } else if captures.name("backslash").is_some() {
+      Token::Backslash
+    } else if captures.name("doublequote").is_some() {
+      Token::DoubleQuote
+    } else if captures.name("semicolon").is_some() {
+      Token::Semicolon
     } else if captures.name("lparen").is_some() {
       Token::LParen
     } else if captures.name("rparen").is_some() {
@@ -103,11 +128,11 @@ mod tests {
   fn test_a_string() {
     let input = r#""foo bar""#;
     assert_eq!(tokenize(input), [
-      Token::Separator(r#"""#.to_string()),
+      Token::DoubleQuote,
       Token::Word("foo".to_string()),
       Token::Whitespace(" ".to_string()),
       Token::Word("bar".to_string()),
-      Token::Separator(r#"""#.to_string()),
+      Token::DoubleQuote,
     ])
   }
 
@@ -116,8 +141,8 @@ mod tests {
     let input = r#"foo\"bar"#;
     assert_eq!(tokenize(input), [
       Token::Word("foo".to_string()),
-      Token::Separator(r"\".to_string()),
-      Token::Separator(r#"""#.to_string()),
+      Token::Backslash,
+      Token::DoubleQuote,
       Token::Word("bar".to_string()),
     ])
   }
@@ -126,12 +151,12 @@ mod tests {
   fn test_escaped_backslash_then_double_quote() {
     let input = r#""foo\\\""#;
     assert_eq!(tokenize(input), [
-      Token::Separator(r#"""#.to_string()),
+      Token::DoubleQuote,
       Token::Word("foo".to_string()),
-      Token::Separator(r"\".to_string()),
-      Token::Separator(r"\".to_string()),
-      Token::Separator(r"\".to_string()),
-      Token::Separator(r#"""#.to_string()),
+      Token::Backslash,
+      Token::Backslash,
+      Token::Backslash,
+      Token::DoubleQuote,
     ])
   }
 
@@ -210,7 +235,7 @@ mod tests {
   fn test_comments_no_prior_content() {
     let input = "; comment";
     assert_eq!(tokenize(input), [
-      Token::Separator(";".to_string()),
+      Token::Semicolon,
       Token::Whitespace(" ".to_string()),
       Token::Word("comment".to_string()),
     ])
@@ -221,7 +246,7 @@ mod tests {
     let input = "42; comment";
     assert_eq!(tokenize(input), [
       Token::Word("42".to_string()),
-      Token::Separator(";".to_string()),
+      Token::Semicolon,
       Token::Whitespace(" ".to_string()),
       Token::Word("comment".to_string()),
     ])
@@ -233,7 +258,7 @@ mod tests {
     assert_eq!(tokenize(input), [
       Token::Word("42".to_string()),
       Token::Whitespace(" ".to_string()),
-      Token::Separator(";".to_string()),
+      Token::Semicolon,
       Token::Whitespace(" ".to_string()),
       Token::Word("comment".to_string()),
       Token::Newline,
