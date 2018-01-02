@@ -51,12 +51,22 @@ fn parse_string(reader: &mut Reader) -> Type {
   let mut accumulator = "".to_string();
   while let Some(token) = reader.next() {
     match token {
+      Token::Backslash => accumulator.push_str(parse_string_escape(reader).as_str()),
       Token::DoubleQuote => break,
       _ => accumulator.push_str(token.to_string().as_str()),
     };
   };
 
   Type::String(accumulator)
+}
+
+fn parse_string_escape(reader: &mut Reader) -> String {
+  match reader.next() {
+    Some(Token::Backslash) => r"\".to_string(),
+    Some(Token::DoubleQuote) => "\"".to_string(),
+    Some(token) => format!("\\{}", token.to_string()),
+    None => "\\".to_string(),
+  }
 }
 
 #[cfg(test)]
@@ -95,5 +105,38 @@ mod tests {
       Token::DoubleQuote,
     ];
     assert_eq!(parse_all(input), [Type::String("foo  \t bar(\n".to_string())]);
+  }
+
+  #[test]
+  fn test_parse_all_string_escaped_backslash() {
+    let input = vec![
+      Token::DoubleQuote,
+      Token::Backslash,
+      Token::Backslash,
+    ];
+    assert_eq!(parse_all(input), [Type::String(r"\".to_string())]);
+  }
+
+  #[test]
+  fn test_parse_all_string_escaped_double_quote() {
+    let input = vec![
+      Token::DoubleQuote,
+      Token::Backslash,
+      Token::DoubleQuote,
+      Token::Word("foo".to_string()),
+      Token::DoubleQuote,
+    ];
+    assert_eq!(parse_all(input), [Type::String("\"foo".to_string())]);
+  }
+
+  #[test]
+  fn test_parse_all_string_escaped_non_escape() {
+    let input = vec![
+      Token::DoubleQuote,
+      Token::Backslash,
+      Token::Word("foo".to_string()),
+      Token::DoubleQuote,
+    ];
+    assert_eq!(parse_all(input), [Type::String("\\foo".to_string())]);
   }
 }
