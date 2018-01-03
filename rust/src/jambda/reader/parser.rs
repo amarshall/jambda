@@ -4,6 +4,7 @@ use jambda::reader::lexer::Token;
 
 #[derive(Debug, PartialEq)]
 pub enum Type {
+  Identifier(std::string::String),
   Integer(isize),
   String(std::string::String),
 }
@@ -50,9 +51,13 @@ pub fn parse_all(tokens: Vec<Token>) -> Vec<Type> {
 }
 
 fn parse_atom(reader: &mut Reader) -> Type {
-  if regex::Regex::new(r"^[+-]?\d+$").unwrap().is_match(reader.peek().unwrap().to_string().as_str()) {
+  let word = reader.peek().unwrap().to_string();
+  if regex::Regex::new(r"^[+-]?\d+$").unwrap().is_match(word.as_str()) {
     let val = reader.next().unwrap().to_string().parse::<isize>().unwrap();
     Type::Integer(val)
+  } else if regex::Regex::new(r"^[^\d]").unwrap().is_match(word.as_str()) {
+    reader.next();
+    Type::Identifier(word)
   } else {
     panic!(format!("Oops: parser unexpected word ({:?})", reader.next().unwrap()))
   }
@@ -150,6 +155,31 @@ mod tests {
       Token::DoubleQuote,
     ];
     assert_eq!(parse_all(input), [Type::String("\\foo".to_string())]);
+  }
+
+  #[test]
+  fn test_parse_all_identifier_alpha() {
+    let input = vec![Token::Word("foo".to_string())];
+    assert_eq!(parse_all(input), [Type::Identifier("foo".to_string())]);
+  }
+
+  #[test]
+  fn test_parse_all_identifier_alphanumeric() {
+    let input = vec![Token::Word("a1b2".to_string())];
+    assert_eq!(parse_all(input), [Type::Identifier("a1b2".to_string())]);
+  }
+
+  #[test]
+  fn test_parse_all_identifier_unicode() {
+    let input = vec![Token::Word("ƒøø".to_string())];
+    assert_eq!(parse_all(input), [Type::Identifier("ƒøø".to_string())]);
+  }
+
+  #[test]
+  #[should_panic]
+  fn test_parse_all_identifier_cannot_start_with_number() {
+    let input = vec![Token::Word("1abc".to_string())];
+    parse_all(input);
   }
 
   #[test]
