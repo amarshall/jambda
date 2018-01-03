@@ -21,6 +21,6 @@ mod tests {
   #[test]
   fn test_parse_error_position() {
     let input = "(foo\n(bar \nbaz 42a\n))".to_string();
-    assert_eq!(read(input), Err("ParseError: [3:5] got invalid Word 42a".to_string()));
+    assert_eq!(read(input), Err("ParseError: [3:5] got invalid Word “42a”".to_string()));
   }
 }
