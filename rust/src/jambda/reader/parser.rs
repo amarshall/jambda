@@ -68,6 +68,7 @@ fn parse_list(reader: &mut Reader) -> Type {
   while let Some(token) = reader.peek() {
     match token {
       Token::RParen => { reader.next(); break },
+      Token::Whitespace(_) => { reader.next(); },
       _ => accumulator.push(parse_form(reader)),
     };
   }
@@ -240,6 +241,21 @@ mod tests {
     assert_eq!(parse_all(input), Type::List(vec![
       Type::Integer(42),
       Type::String("42".to_string()),
+    ]));
+  }
+
+  #[test]
+  fn test_parse_all_list_many_elements_whitespace() {
+    let input = vec![
+      Token::LParen,
+      Token::Word("42".to_string()),
+      Token::Whitespace(" ".to_string()),
+      Token::Word("42".to_string()),
+      Token::RParen,
+    ];
+    assert_eq!(parse_all(input), Type::List(vec![
+      Type::Integer(42),
+      Type::Integer(42),
     ]));
   }
 
