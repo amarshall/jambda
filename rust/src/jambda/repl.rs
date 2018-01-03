@@ -14,6 +14,7 @@ pub fn run() {
   loop {
     match editor.readline("∎ ") {
       Ok(line) => {
+        editor.add_history_entry(&line);
         println!("{:?}", print(eval(reader::read(line))));
       }
       Err(rustyline::error::ReadlineError::Eof) => {
