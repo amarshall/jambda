@@ -4,6 +4,7 @@ use jambda::reader::lexer::Token;
 
 #[derive(Debug, PartialEq)]
 pub enum Form {
+  Float(f64),
   Identifier(std::string::String),
   Integer(isize),
   List(Vec<Form>),
@@ -75,6 +76,10 @@ fn parse_atom(reader: &mut Reader) -> Result<Form, String> {
     reader.next();
     let val = word.replace("_", "").parse::<isize>().unwrap();
     Ok(Form::Integer(val))
+  } else if regex::Regex::new(r"^[+-]?(\d+|\d(\d|_)+\d)\.(\d+|\d(\d|_)+\d)$").unwrap().is_match(word.as_str()) {
+    reader.next();
+    let val = word.replace("_", "").parse::<f64>().unwrap();
+    Ok(Form::Float(val))
   } else if regex::Regex::new(r"^[^\d]").unwrap().is_match(word.as_str()) {
     reader.next();
     Ok(Form::Identifier(word))
@@ -285,6 +290,54 @@ mod tests {
   fn test_parse_all_integer_underscore_at_end_is_word() {
     let input = vec![Token::Word("42_".to_string())];
     assert_eq!(parse_all(input), Err("ParseError: got invalid Word 42_".to_string()));
+  }
+
+  #[test]
+  fn test_parse_all_float() {
+    let input = vec![Token::Word("4.2".to_string())];
+    assert_eq!(parse_all(input).unwrap(), Form::Float(4.2));
+  }
+
+  #[test]
+  fn test_parse_all_float_positive() {
+    let input = vec![Token::Word("+4.2".to_string())];
+    assert_eq!(parse_all(input).unwrap(), Form::Float(4.2));
+  }
+
+  #[test]
+  fn test_parse_all_float_negative() {
+    let input = vec![Token::Word("-4.2".to_string())];
+    assert_eq!(parse_all(input).unwrap(), Form::Float(-4.2));
+  }
+
+  #[test]
+  fn test_parse_all_float_underscore() {
+    let input = vec![Token::Word("4_200.002_4".to_string())];
+    assert_eq!(parse_all(input).unwrap(), Form::Float(4200.0024));
+  }
+
+  #[test]
+  fn test_parse_all_float_underscore_at_start_is_word() {
+    let input = vec![Token::Word("_4.2".to_string())];
+    assert_eq!(parse_all(input).unwrap(), Form::Identifier("_4.2".to_string()));
+  }
+
+  #[test]
+  fn test_parse_all_float_underscore_at_left_end_is_word() {
+    let input = vec![Token::Word("4_.2".to_string())];
+    assert_eq!(parse_all(input), Err("ParseError: got invalid Word 4_.2".to_string()));
+  }
+
+  #[test]
+  fn test_parse_all_float_underscore_at_right_end_is_word() {
+    let input = vec![Token::Word("4._2".to_string())];
+    assert_eq!(parse_all(input), Err("ParseError: got invalid Word 4._2".to_string()));
+  }
+
+  #[test]
+  fn test_parse_all_float_underscore_at_end_is_word() {
+    let input = vec![Token::Word("4.2_".to_string())];
+    assert_eq!(parse_all(input), Err("ParseError: got invalid Word 4.2_".to_string()));
   }
 
   #[test]
