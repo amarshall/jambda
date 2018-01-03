@@ -3,10 +3,10 @@ use std;
 use jambda::reader::lexer::Token;
 
 #[derive(Debug, PartialEq)]
-pub enum Type {
+pub enum Form {
   Identifier(std::string::String),
   Integer(isize),
-  List(Vec<Type>),
+  List(Vec<Form>),
   String(std::string::String),
 }
 
@@ -35,7 +35,7 @@ impl<'a> Reader<'a> {
   }
 }
 
-pub fn parse_all(tokens: Vec<Token>) -> Result<Type, String> {
+pub fn parse_all(tokens: Vec<Token>) -> Result<Form, String> {
   let reader = &mut Reader{tokens: &tokens, position: 0};
   let result = parse_form(reader);
   match reader.peek() {
@@ -54,7 +54,7 @@ fn eat_whitespace(reader: &mut Reader) {
   }
 }
 
-fn parse_form(reader: &mut Reader) -> Result<Type, String> {
+fn parse_form(reader: &mut Reader) -> Result<Form, String> {
   eat_whitespace(reader);
   let result = match reader.peek().unwrap() {
     Token::DoubleQuote => parse_string(reader),
@@ -66,21 +66,21 @@ fn parse_form(reader: &mut Reader) -> Result<Type, String> {
   result
 }
 
-fn parse_atom(reader: &mut Reader) -> Result<Type, String> {
+fn parse_atom(reader: &mut Reader) -> Result<Form, String> {
   let word = reader.peek().unwrap().to_string();
   if regex::Regex::new(r"^[+-]?\d+$").unwrap().is_match(word.as_str()) {
     reader.next();
     let val = word.parse::<isize>().unwrap();
-    Ok(Type::Integer(val))
+    Ok(Form::Integer(val))
   } else if regex::Regex::new(r"^[^\d]").unwrap().is_match(word.as_str()) {
     reader.next();
-    Ok(Type::Identifier(word))
+    Ok(Form::Identifier(word))
   } else {
     Err(format!("Oops: parser unexpected word ({:?})", reader.next().unwrap()))
   }
 }
 
-fn parse_list(reader: &mut Reader) -> Result<Type, String> {
+fn parse_list(reader: &mut Reader) -> Result<Form, String> {
   reader.next();
   let mut accumulator = vec![];
   loop {
@@ -95,10 +95,10 @@ fn parse_list(reader: &mut Reader) -> Result<Type, String> {
     };
   };
 
-  Ok(Type::List(accumulator))
+  Ok(Form::List(accumulator))
 }
 
-fn parse_string(reader: &mut Reader) -> Result<Type, String> {
+fn parse_string(reader: &mut Reader) -> Result<Form, String> {
   reader.next();
   let mut accumulator = "".to_string();
   loop {
@@ -110,7 +110,7 @@ fn parse_string(reader: &mut Reader) -> Result<Type, String> {
     };
   };
 
-  Ok(Type::String(accumulator))
+  Ok(Form::String(accumulator))
 }
 
 fn parse_string_escape(reader: &mut Reader) -> String {
@@ -133,7 +133,7 @@ mod tests {
       Token::DoubleQuote,
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input).unwrap(), Type::String("".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Form::String("".to_string()));
   }
 
   #[test]
@@ -143,7 +143,7 @@ mod tests {
       Token::Word("foo".to_string()),
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input).unwrap(), Type::String("foo".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Form::String("foo".to_string()));
   }
 
   #[test]
@@ -157,7 +157,7 @@ mod tests {
       Token::Newline,
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input).unwrap(), Type::String("foo  \t bar(\n".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Form::String("foo  \t bar(\n".to_string()));
   }
 
   #[test]
@@ -168,7 +168,7 @@ mod tests {
       Token::Backslash,
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input).unwrap(), Type::String(r"\".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Form::String(r"\".to_string()));
   }
 
   #[test]
@@ -180,7 +180,7 @@ mod tests {
       Token::Word("foo".to_string()),
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input).unwrap(), Type::String("\"foo".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Form::String("\"foo".to_string()));
   }
 
   #[test]
@@ -191,7 +191,7 @@ mod tests {
       Token::Word("foo".to_string()),
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input).unwrap(), Type::String("\\foo".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Form::String("\\foo".to_string()));
   }
 
   #[test]
@@ -205,19 +205,19 @@ mod tests {
   #[test]
   fn test_parse_all_identifier_alpha() {
     let input = vec![Token::Word("foo".to_string())];
-    assert_eq!(parse_all(input).unwrap(), Type::Identifier("foo".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Form::Identifier("foo".to_string()));
   }
 
   #[test]
   fn test_parse_all_identifier_alphanumeric() {
     let input = vec![Token::Word("a1b2".to_string())];
-    assert_eq!(parse_all(input).unwrap(), Type::Identifier("a1b2".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Form::Identifier("a1b2".to_string()));
   }
 
   #[test]
   fn test_parse_all_identifier_unicode() {
     let input = vec![Token::Word("ƒøø".to_string())];
-    assert_eq!(parse_all(input).unwrap(), Type::Identifier("ƒøø".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Form::Identifier("ƒøø".to_string()));
   }
 
   #[test]
@@ -229,25 +229,25 @@ mod tests {
   #[test]
   fn test_parse_all_integer() {
     let input = vec![Token::Word("42".to_string())];
-    assert_eq!(parse_all(input).unwrap(), Type::Integer(42));
+    assert_eq!(parse_all(input).unwrap(), Form::Integer(42));
   }
 
   #[test]
   fn test_parse_all_integer_positive() {
     let input = vec![Token::Word("+42".to_string())];
-    assert_eq!(parse_all(input).unwrap(), Type::Integer(42));
+    assert_eq!(parse_all(input).unwrap(), Form::Integer(42));
   }
 
   #[test]
   fn test_parse_all_integer_negative() {
     let input = vec![Token::Word("-42".to_string())];
-    assert_eq!(parse_all(input).unwrap(), Type::Integer(-42));
+    assert_eq!(parse_all(input).unwrap(), Form::Integer(-42));
   }
 
   #[test]
   fn test_parse_all_list_empty() {
     let input = vec![Token::LParen, Token::RParen];
-    assert_eq!(parse_all(input).unwrap(), Type::List(vec![]));
+    assert_eq!(parse_all(input).unwrap(), Form::List(vec![]));
   }
 
   #[test]
@@ -257,7 +257,7 @@ mod tests {
       Token::Word("42".to_string()),
       Token::RParen,
     ];
-    assert_eq!(parse_all(input).unwrap(), Type::List(vec![Type::Integer(42)]));
+    assert_eq!(parse_all(input).unwrap(), Form::List(vec![Form::Integer(42)]));
   }
 
   #[test]
@@ -270,9 +270,9 @@ mod tests {
       Token::DoubleQuote,
       Token::RParen,
     ];
-    assert_eq!(parse_all(input).unwrap(), Type::List(vec![
-      Type::Integer(42),
-      Type::String("42".to_string()),
+    assert_eq!(parse_all(input).unwrap(), Form::List(vec![
+      Form::Integer(42),
+      Form::String("42".to_string()),
     ]));
   }
 
@@ -285,9 +285,9 @@ mod tests {
       Token::Word("42".to_string()),
       Token::RParen,
     ];
-    assert_eq!(parse_all(input).unwrap(), Type::List(vec![
-      Type::Integer(42),
-      Type::Integer(42),
+    assert_eq!(parse_all(input).unwrap(), Form::List(vec![
+      Form::Integer(42),
+      Form::Integer(42),
     ]));
   }
 
@@ -302,9 +302,9 @@ mod tests {
       Token::RParen,
     ];
     assert_eq!(parse_all(input).unwrap(),
-      Type::List(vec![
-        Type::List(vec![
-          Type::List(vec![]),
+      Form::List(vec![
+        Form::List(vec![
+          Form::List(vec![]),
         ]),
       ])
     );
@@ -326,16 +326,16 @@ mod tests {
       Token::RParen,
     ];
     assert_eq!(parse_all(input).unwrap(),
-      Type::List(vec![
-        Type::Integer(1),
-        Type::List(vec![
-          Type::Integer(2),
-          Type::List(vec![
-            Type::Integer(3),
+      Form::List(vec![
+        Form::Integer(1),
+        Form::List(vec![
+          Form::Integer(2),
+          Form::List(vec![
+            Form::Integer(3),
           ]),
-          Type::Integer(4),
+          Form::Integer(4),
         ]),
-        Type::Integer(5),
+        Form::Integer(5),
       ])
     );
   }
@@ -361,7 +361,7 @@ mod tests {
       Token::Whitespace(" ".to_string()),
       Token::Word("42".to_string()),
     ];
-    assert_eq!(parse_all(input).unwrap(), Type::Integer(42));
+    assert_eq!(parse_all(input).unwrap(), Form::Integer(42));
   }
 
   #[test]
@@ -377,7 +377,7 @@ mod tests {
       Token::Whitespace(" ".to_string()),
       Token::Whitespace(" ".to_string()),
     ];
-    assert_eq!(parse_all(input).unwrap(), Type::Integer(42));
+    assert_eq!(parse_all(input).unwrap(), Form::Integer(42));
   }
 
   #[test]

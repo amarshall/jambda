@@ -1,11 +1,11 @@
 extern crate rustyline;
 use jambda::reader;
 
-fn eval(ast: Result<reader::parser::Type, String>) -> Result<reader::parser::Type, String> {
+fn eval(ast: Result<reader::parser::Form, String>) -> Result<reader::parser::Form, String> {
   ast
 }
 
-fn print(exp: Result<reader::parser::Type, String>) -> Result<String, String> {
+fn print(exp: Result<reader::parser::Form, String>) -> Result<String, String> {
   exp.map(|form| format!("{:?}", form))
 }
 
