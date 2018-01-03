@@ -41,7 +41,8 @@ impl<'a> Reader<'a> {
   fn next(&mut self) -> Option<TokenPtr> {
     if self.cursor_pos < self.tokens.len() {
       self.cursor_pos += 1;
-      Some(self.tokens[self.cursor_pos - 1].to_owned())
+      let token = self.tokens[self.cursor_pos - 1].to_owned();
+      Some(token)
     } else {
       None
     }
@@ -49,7 +50,8 @@ impl<'a> Reader<'a> {
 
   fn peek(&self) -> Option<TokenPtr> {
     if self.cursor_pos < self.tokens.len() {
-      Some(self.tokens[self.cursor_pos].to_owned())
+      let token = self.tokens[self.cursor_pos].to_owned();
+      Some(token)
     } else {
       None
     }
@@ -317,7 +319,7 @@ mod tests {
     ];
     assert_eq!(
       parse_all(input),
-      Err("ParseError: [0] got nothing but expected at least DoubleQuote (unclosed string literal)".to_string())
+      Err("ParseError: [0:0] got nothing but expected at least DoubleQuote (unclosed string literal)".to_string())
     );
   }
 
@@ -342,7 +344,7 @@ mod tests {
   #[test]
   fn test_parse_all_identifier_cannot_start_with_number() {
     let input = vec![Token::Word("1abc".to_string())];
-    assert_eq!(parse_all(input), Err("ParseError: [0] got invalid Word 1abc".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0:0] got invalid Word 1abc".to_string()));
   }
 
   #[test]
@@ -378,7 +380,7 @@ mod tests {
   #[test]
   fn test_parse_all_integer_underscore_at_end_is_word() {
     let input = vec![Token::Word("42_".to_string())];
-    assert_eq!(parse_all(input), Err("ParseError: [0] got invalid Word 42_".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0:0] got invalid Word 42_".to_string()));
   }
 
   #[test]
@@ -414,19 +416,19 @@ mod tests {
   #[test]
   fn test_parse_all_float_underscore_at_left_end_is_word() {
     let input = vec![Token::Word("4_.2".to_string())];
-    assert_eq!(parse_all(input), Err("ParseError: [0] got invalid Word 4_.2".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0:0] got invalid Word 4_.2".to_string()));
   }
 
   #[test]
   fn test_parse_all_float_underscore_at_right_end_is_word() {
     let input = vec![Token::Word("4._2".to_string())];
-    assert_eq!(parse_all(input), Err("ParseError: [0] got invalid Word 4._2".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0:0] got invalid Word 4._2".to_string()));
   }
 
   #[test]
   fn test_parse_all_float_underscore_at_end_is_word() {
     let input = vec![Token::Word("4.2_".to_string())];
-    assert_eq!(parse_all(input), Err("ParseError: [0] got invalid Word 4.2_".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0:0] got invalid Word 4.2_".to_string()));
   }
 
   #[test]
@@ -532,7 +534,7 @@ mod tests {
     ];
     assert_eq!(
       parse_all(input),
-      Err("ParseError: [0] got nothing but expected at least RParen (unclosed list)".to_string())
+      Err("ParseError: [0:0] got nothing but expected at least RParen (unclosed list)".to_string())
     );
   }
 
@@ -574,15 +576,16 @@ mod tests {
       Token::Word("42a".to_string()),
       Token::Word("42".to_string()),
     ];
-    assert_eq!(parse_all(input), Err("ParseError: [0] got invalid Word 42a".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0:0] got invalid Word 42a".to_string()));
   }
 
   #[test]
   fn test_parse_all_trailing_tokens() {
     let input = vec![
       Token::Word("42".to_string()),
+      Token::Whitespace(" ".to_string()),
       Token::Word("42".to_string()),
     ];
-    assert_eq!(parse_all(input), Err("ParseError: [0] got Word but expected nothing".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0:0] got Word but expected nothing".to_string()));
   }
 }

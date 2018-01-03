@@ -16,6 +16,7 @@ pub enum Token {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Position {
   line: usize,
+  char: usize,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -26,11 +27,19 @@ pub struct TokenPtr {
 
 impl std::string::ToString for Position {
   fn to_string(&self) -> String {
-    self.line.to_string()
+    format!("{}:{}", self.line, self.char)
   }
 }
 
 impl Token {
+  pub fn len(&self) -> usize {
+    match *self {
+      Token::Whitespace(ref val) => val.len(),
+      Token::Word(ref val) => val.len(),
+      _ => 1,
+    }
+  }
+
   pub fn name(&self) -> &str {
     match *self {
       Token::Backslash => "Backslash",
@@ -62,7 +71,7 @@ impl std::string::ToString for Token {
 
 impl TokenPtr {
   pub fn from_token(token: Token) -> TokenPtr {
-    TokenPtr{token: token, pos: Position{line: 0}}
+    TokenPtr{token: token, pos: Position{line: 0, char: 0}}
   }
 
   pub fn position(&self) -> Position {
@@ -89,7 +98,7 @@ impl std::string::ToString for TokenPtr {
 const REGEX: &str = r###"(?x)(
 (?P<newline>\n)
 |
-(?P<whitespace>\s+)
+(?P<whitespace>[\x20\t]+)
 |
 (?P<backslash>[\\])
 |
@@ -110,15 +119,15 @@ fn capture_to_string(capture: Option<regex::Match>) -> String {
 
 pub fn tokenize(str: &str) -> Vec<TokenPtr> {
   let mut line_no = 1;
+  let mut char_no = 1;
   let mut tokens = vec![];
   let re = regex::Regex::new(REGEX).unwrap();
   for captures in re.captures_iter(&str) {
-    let position = Position{line: line_no};
+    let position = Position{line: line_no, char: char_no};
     let token = if captures.name("whitespace").is_some() {
       let capture = captures.name("whitespace");
       Token::Whitespace(capture_to_string(capture))
     } else if captures.name("newline").is_some() {
-      line_no += 1;
       Token::Newline
     } else if captures.name("backslash").is_some() {
       Token::Backslash
@@ -136,7 +145,15 @@ pub fn tokenize(str: &str) -> Vec<TokenPtr> {
     } else {
       panic!("LexError: expected a capture but got none (bug)");
     };
-    tokens.push(TokenPtr{token: token, pos: position});
+    match token {
+      Token::Newline => {
+        char_no = 1;
+        line_no += 1;
+      },
+      _ => char_no += token.len(),
+    };
+    let token_ptr = TokenPtr{token: token, pos: position};
+    tokens.push(token_ptr);
   }
   tokens
 }
@@ -181,6 +198,19 @@ mod tests {
       Token::Word("abc1".to_string()),
       Token::Whitespace("  ".to_string()),
       Token::Word("123a".to_string()),
+      Token::Whitespace("  ".to_string()),
+    ])
+  }
+
+  #[test]
+  fn test_whitespace_and_newline() {
+    let input = "  \n  \n\n  ";
+    assert_eq!(tokenize(input), [
+      Token::Whitespace("  ".to_string()),
+      Token::Newline,
+      Token::Whitespace("  ".to_string()),
+      Token::Newline,
+      Token::Newline,
       Token::Whitespace("  ".to_string()),
     ])
   }
