@@ -69,7 +69,8 @@ fn parse_form(reader: &mut Reader) -> Result<Type, String> {
 fn parse_atom(reader: &mut Reader) -> Result<Type, String> {
   let word = reader.peek().unwrap().to_string();
   if regex::Regex::new(r"^[+-]?\d+$").unwrap().is_match(word.as_str()) {
-    let val = reader.next().unwrap().to_string().parse::<isize>().unwrap();
+    reader.next();
+    let val = word.parse::<isize>().unwrap();
     Ok(Type::Integer(val))
   } else if regex::Regex::new(r"^[^\d]").unwrap().is_match(word.as_str()) {
     reader.next();
