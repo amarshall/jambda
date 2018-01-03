@@ -99,7 +99,7 @@ fn parse_form(reader: &mut Reader) -> Result<Form, String> {
       Some(Token::LParen) => Some(parse_list(reader)),
       Some(Token::Semicolon) => { eat_comment(reader); None },
       Some(Token::Word(_)) => Some(parse_atom(reader)),
-      Some(token) => Some(Err(reader.parse_error(format!("got {} but expected one of DoubleQuote,LParen,Word", token.name())))),
+      Some(token) => Some(Err(reader.parse_error(format!("got {} but expected one of DoubleQuote,LParen,SemiColon,Word", token.name())))),
       None => Some(Ok(Form::Nil)),
     };
     if result.is_some() { break };
