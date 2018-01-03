@@ -65,14 +65,15 @@ fn parse_atom(reader: &mut Reader) -> Result<Type, String> {
 fn parse_list(reader: &mut Reader) -> Result<Type, String> {
   reader.next();
   let mut accumulator = vec![];
-  while let Some(token) = reader.peek() {
-    match token {
-      Token::RParen => { reader.next(); break },
-      Token::Whitespace(_) => { reader.next(); },
-      _ => match parse_form(reader) {
+  loop {
+    match reader.peek() {
+      Some(Token::RParen) => { reader.next(); break },
+      Some(Token::Whitespace(_)) => { reader.next(); },
+      Some(_) => match parse_form(reader) {
         Ok(form) => accumulator.push(form),
         err @ Err(_) => return err,
       },
+      None => return Err("Oops: parser got unexpected EOF".to_string()),
     };
   };
 
@@ -309,5 +310,13 @@ mod tests {
         Type::Integer(5),
       ])
     );
+  }
+
+  #[test]
+  fn test_parse_all_list_unclosed() {
+    let input = vec![
+      Token::LParen,
+    ];
+    assert!(parse_all(input).is_err())
   }
 }
