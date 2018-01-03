@@ -6,6 +6,7 @@ use jambda::reader::lexer::Token;
 pub enum Type {
   Identifier(std::string::String),
   Integer(isize),
+  List(Vec<Type>),
   String(std::string::String),
 }
 
@@ -38,16 +39,21 @@ pub fn parse_all(tokens: Vec<Token>) -> Vec<Type> {
   let mut nodes = vec![];
   let reader = &mut Reader{tokens: &tokens, position: 0};
 
-  while let Some(token) = reader.peek() {
-    let node = match token {
-      Token::DoubleQuote => parse_string(reader),
-      Token::Word(_) => parse_atom(reader),
-      _ => panic!(format!("Oops: parser unimplimented token ({:?})", token)),
-    };
+  while let Some(_) = reader.peek() {
+    let node = parse_form(reader);
     nodes.push(node);
   };
 
   nodes
+}
+
+fn parse_form(reader: &mut Reader) -> Type {
+  match reader.peek().unwrap() {
+    Token::DoubleQuote => parse_string(reader),
+    Token::LParen => parse_list(reader),
+    Token::Word(_) => parse_atom(reader),
+    token => panic!(format!("Oops: parser unimplimented token ({:?})", token)),
+  }
 }
 
 fn parse_atom(reader: &mut Reader) -> Type {
@@ -61,6 +67,18 @@ fn parse_atom(reader: &mut Reader) -> Type {
   } else {
     panic!(format!("Oops: parser unexpected word ({:?})", reader.next().unwrap()))
   }
+}
+
+fn parse_list(reader: &mut Reader) -> Type {
+  reader.next();
+  let mut accumulator = vec![];
+  while let Some(token) = reader.peek() {
+    match token {
+      Token::RParen => { reader.next(); break },
+      _ => accumulator.push(parse_form(reader)),
+    };
+  }
+  Type::List(accumulator)
 }
 
 fn parse_string(reader: &mut Reader) -> Type {
@@ -198,5 +216,86 @@ mod tests {
   fn test_parse_all_integer_negative() {
     let input = vec![Token::Word("-42".to_string())];
     assert_eq!(parse_all(input), [Type::Integer(-42)]);
+  }
+
+  #[test]
+  fn test_parse_all_list_empty() {
+    let input = vec![Token::LParen, Token::RParen];
+    assert_eq!(parse_all(input), [Type::List(vec![])]);
+  }
+
+  #[test]
+  fn test_parse_all_list_one_element() {
+    let input = vec![
+      Token::LParen,
+      Token::Word("42".to_string()),
+      Token::RParen,
+    ];
+    assert_eq!(parse_all(input), [Type::List(vec![Type::Integer(42)])]);
+  }
+
+  #[test]
+  fn test_parse_all_list_many_elements() {
+    let input = vec![
+      Token::LParen,
+      Token::Word("42".to_string()),
+      Token::DoubleQuote,
+      Token::Word("42".to_string()),
+      Token::DoubleQuote,
+      Token::RParen,
+    ];
+    assert_eq!(parse_all(input), [Type::List(vec![
+      Type::Integer(42),
+      Type::String("42".to_string()),
+    ])]);
+  }
+
+  #[test]
+  fn test_parse_all_list_nested() {
+    let input = vec![
+      Token::LParen,
+      Token::LParen,
+      Token::LParen,
+      Token::RParen,
+      Token::RParen,
+      Token::RParen,
+    ];
+    assert_eq!(parse_all(input), [
+      Type::List(vec![
+        Type::List(vec![
+          Type::List(vec![]),
+        ]),
+      ]),
+    ]);
+  }
+
+  #[test]
+  fn test_parse_all_list_nested_complex() {
+    let input = vec![
+      Token::LParen,
+      Token::Word("1".to_string()),
+      Token::LParen,
+      Token::Word("2".to_string()),
+      Token::LParen,
+      Token::Word("3".to_string()),
+      Token::RParen,
+      Token::Word("4".to_string()),
+      Token::RParen,
+      Token::Word("5".to_string()),
+      Token::RParen,
+    ];
+    assert_eq!(parse_all(input), [
+      Type::List(vec![
+        Type::Integer(1),
+        Type::List(vec![
+          Type::Integer(2),
+          Type::List(vec![
+            Type::Integer(3),
+          ]),
+          Type::Integer(4),
+        ]),
+        Type::Integer(5),
+      ]),
+    ]);
   }
 }
