@@ -7,6 +7,7 @@ pub enum Form {
   Float(f64),
   Identifier(std::string::String),
   Integer(isize),
+  Nil,
   List(Vec<Form>),
   String(std::string::String),
 }
@@ -58,16 +59,32 @@ fn eat_whitespace(reader: &mut Reader) {
   }
 }
 
+fn eat_comment(reader: &mut Reader) {
+  loop {
+    match reader.peek() {
+      Some(Token::Newline) => break,
+      None => break,
+      _ => reader.next(),
+    };
+  }
+}
+
 fn parse_form(reader: &mut Reader) -> Result<Form, String> {
+  let mut result;
+  loop {
+    eat_whitespace(reader);
+    result = match reader.peek() {
+      Some(Token::DoubleQuote) => Some(parse_string(reader)),
+      Some(Token::LParen) => Some(parse_list(reader)),
+      Some(Token::Semicolon) => { eat_comment(reader); None },
+      Some(Token::Word(_)) => Some(parse_atom(reader)),
+      Some(token) => Some(Err(format!("ParseError: got {} but expected one of DoubleQuote,LParen,Word", token.name()))),
+      None => Some(Ok(Form::Nil)),
+    };
+    if result.is_some() { break };
+  }
   eat_whitespace(reader);
-  let result = match reader.peek().unwrap() {
-    Token::DoubleQuote => parse_string(reader),
-    Token::LParen => parse_list(reader),
-    Token::Word(_) => parse_atom(reader),
-    token => Err(format!("ParseError: got {} but expected one of DoubleQuote,LParen,Word", token.name())),
-  };
-  eat_whitespace(reader);
-  result
+  result.unwrap()
 }
 
 fn parse_atom(reader: &mut Reader) -> Result<Form, String> {
@@ -144,6 +161,50 @@ mod tests {
   use jambda::reader::lexer::Token;
 
   #[test]
+  fn test_parse_all_nothing() {
+    let input = vec![];
+    assert_eq!(parse_all(input).unwrap(), Form::Nil);
+  }
+
+  #[test]
+  fn test_parse_all_whitespace() {
+    let input = vec![Token::Whitespace(" ".to_string())];
+    assert_eq!(parse_all(input).unwrap(), Form::Nil);
+  }
+
+  #[test]
+  fn test_parse_all_comment() {
+    let input = vec![
+      Token::Semicolon,
+      Token::Whitespace("  ".to_string()),
+      Token::Word("foo".to_string()),
+      Token::Whitespace("  ".to_string()),
+      Token::RParen,
+      Token::LParen,
+      Token::Backslash,
+      Token::DoubleQuote,
+    ];
+    assert_eq!(parse_all(input).unwrap(), Form::Nil);
+  }
+
+  #[test]
+  fn test_parse_all_comment_newline() {
+    let input = vec![
+      Token::Semicolon,
+      Token::Whitespace("  ".to_string()),
+      Token::Word("foo".to_string()),
+      Token::Whitespace("  ".to_string()),
+      Token::RParen,
+      Token::LParen,
+      Token::Backslash,
+      Token::DoubleQuote,
+      Token::Newline,
+      Token::Word("42".to_string()),
+    ];
+    assert_eq!(parse_all(input).unwrap(), Form::Integer(42));
+  }
+
+  #[test]
   fn test_parse_all_string_empty() {
     let input = vec![
       Token::DoubleQuote,
@@ -211,14 +272,14 @@ mod tests {
   }
 
   #[test]
-  fn test_parse_all_string_escaped_non_escape() {
+  fn test_parse_all_string_with_semicolon() {
     let input = vec![
       Token::DoubleQuote,
-      Token::Backslash,
-      Token::Word("foo".to_string()),
+      Token::Semicolon,
       Token::DoubleQuote,
+      Token::Newline,
     ];
-    assert_eq!(parse_all(input).unwrap(), Form::String("\\foo".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Form::String(";".to_string()));
   }
 
   #[test]
