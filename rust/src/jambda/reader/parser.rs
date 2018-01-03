@@ -114,9 +114,17 @@ fn parse_string(reader: &mut Reader) -> Result<Form, String> {
 }
 
 fn parse_string_escape(reader: &mut Reader) -> String {
+  let newline_re = regex::Regex::new("n(.*)").unwrap();
   match reader.next() {
     Some(Token::Backslash) => r"\".to_string(),
     Some(Token::DoubleQuote) => "\"".to_string(),
+    Some(Token::Word(word)) => {
+      if let Some(captures) = newline_re.captures(word.as_str()) {
+        format!("\n{}", captures.get(1).map_or("", |m| m.as_str()))
+      } else {
+        format!("\\{}", word)
+      }
+    },
     Some(token) => format!("\\{}", token.to_string()),
     None => "\\".to_string(),
   }
@@ -181,6 +189,17 @@ mod tests {
       Token::DoubleQuote,
     ];
     assert_eq!(parse_all(input).unwrap(), Form::String("\"foo".to_string()));
+  }
+
+  #[test]
+  fn test_parse_all_string_escaped_newline() {
+    let input = vec![
+      Token::DoubleQuote,
+      Token::Backslash,
+      Token::Word("n".to_string()),
+      Token::DoubleQuote,
+    ];
+    assert_eq!(parse_all(input).unwrap(), Form::String("\n".to_string()));
   }
 
   #[test]
