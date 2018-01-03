@@ -38,9 +38,12 @@ impl<'a> Reader<'a> {
 pub fn parse_all(tokens: Vec<Token>) -> Result<Form, String> {
   let reader = &mut Reader{tokens: &tokens, position: 0};
   let result = parse_form(reader);
-  match reader.peek() {
-    Some(token) => Err(format!("ParseError: got {} but expected nothing", token.name())),
-    None => result
+  match result {
+    Ok(_) => match reader.peek() {
+      Some(token) => Err(format!("ParseError: got {} but expected nothing", token.name())),
+      None => result,
+    },
+    Err(_) => result,
   }
 }
 
@@ -403,6 +406,15 @@ mod tests {
       Token::Whitespace(" ".to_string()),
     ];
     assert_eq!(parse_all(input).unwrap(), Form::Integer(42));
+  }
+
+  #[test]
+  fn test_parse_all_trailing_tokens_dont_supress_existing_err() {
+    let input = vec![
+      Token::Word("42a".to_string()),
+      Token::Word("42".to_string()),
+    ];
+    assert_eq!(parse_all(input), Err("ParseError: got invalid Word 42a".to_string()));
   }
 
   #[test]
