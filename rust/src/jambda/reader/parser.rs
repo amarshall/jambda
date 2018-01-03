@@ -40,13 +40,26 @@ pub fn parse_all(tokens: Vec<Token>) -> Result<Type, String> {
   parse_form(reader)
 }
 
+fn eat_whitespace(reader: &mut Reader) {
+  loop {
+    match reader.peek() {
+      Some(Token::Newline) => { reader.next(); },
+      Some(Token::Whitespace(_)) => { reader.next(); },
+      _ => break,
+    }
+  }
+}
+
 fn parse_form(reader: &mut Reader) -> Result<Type, String> {
-  match reader.peek().unwrap() {
+  eat_whitespace(reader);
+  let result = match reader.peek().unwrap() {
     Token::DoubleQuote => parse_string(reader),
     Token::LParen => parse_list(reader),
     Token::Word(_) => parse_atom(reader),
     token => Err(format!("Oops: parser unimplimented token ({:?})", token)),
-  }
+  };
+  eat_whitespace(reader);
+  result
 }
 
 fn parse_atom(reader: &mut Reader) -> Result<Type, String> {
@@ -328,5 +341,37 @@ mod tests {
       Token::LParen,
     ];
     assert!(parse_all(input).is_err())
+  }
+
+  #[test]
+  fn test_parse_all_leading_whitespace() {
+    let input = vec![
+      Token::Newline,
+      Token::Newline,
+      Token::Whitespace(" ".to_string()),
+      Token::Whitespace(" ".to_string()),
+      Token::Newline,
+      Token::Newline,
+      Token::Whitespace(" ".to_string()),
+      Token::Whitespace(" ".to_string()),
+      Token::Word("42".to_string()),
+    ];
+    assert_eq!(parse_all(input).unwrap(), Type::Integer(42));
+  }
+
+  #[test]
+  fn test_parse_all_trailing_whitespace() {
+    let input = vec![
+      Token::Word("42".to_string()),
+      Token::Newline,
+      Token::Newline,
+      Token::Whitespace(" ".to_string()),
+      Token::Whitespace(" ".to_string()),
+      Token::Newline,
+      Token::Newline,
+      Token::Whitespace(" ".to_string()),
+      Token::Whitespace(" ".to_string()),
+    ];
+    assert_eq!(parse_all(input).unwrap(), Type::Integer(42));
   }
 }
