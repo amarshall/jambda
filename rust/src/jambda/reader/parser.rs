@@ -83,11 +83,12 @@ fn parse_list(reader: &mut Reader) -> Result<Type, String> {
 fn parse_string(reader: &mut Reader) -> Result<Type, String> {
   reader.next();
   let mut accumulator = "".to_string();
-  while let Some(token) = reader.next() {
-    match token {
-      Token::Backslash => accumulator.push_str(parse_string_escape(reader).as_str()),
-      Token::DoubleQuote => break,
-      _ => accumulator.push_str(token.to_string().as_str()),
+  loop {
+    match reader.next() {
+      Some(Token::Backslash) => accumulator.push_str(parse_string_escape(reader).as_str()),
+      Some(Token::DoubleQuote) => break,
+      Some(token) => accumulator.push_str(token.to_string().as_str()),
+      None => return Err("Oops: parser got unexpected EOF".to_string()),
     };
   };
 
@@ -147,6 +148,7 @@ mod tests {
       Token::DoubleQuote,
       Token::Backslash,
       Token::Backslash,
+      Token::DoubleQuote,
     ];
     assert_eq!(parse_all(input).unwrap(), Type::String(r"\".to_string()));
   }
@@ -172,6 +174,14 @@ mod tests {
       Token::DoubleQuote,
     ];
     assert_eq!(parse_all(input).unwrap(), Type::String("\\foo".to_string()));
+  }
+
+  #[test]
+  fn test_parse_all_string_unclosed() {
+    let input = vec![
+      Token::DoubleQuote,
+    ];
+    assert!(parse_all(input).is_err());
   }
 
   #[test]
