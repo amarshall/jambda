@@ -39,7 +39,7 @@ pub fn parse_all(tokens: Vec<Token>) -> Result<Form, String> {
   let reader = &mut Reader{tokens: &tokens, position: 0};
   let result = parse_form(reader);
   match reader.peek() {
-    Some(token) => Err(format!("Oops: parser expected EOF but got: {:?}", token)),
+    Some(token) => Err(format!("ParseError: got {} but expected nothing", token.name())),
     None => result
   }
 }
@@ -60,7 +60,7 @@ fn parse_form(reader: &mut Reader) -> Result<Form, String> {
     Token::DoubleQuote => parse_string(reader),
     Token::LParen => parse_list(reader),
     Token::Word(_) => parse_atom(reader),
-    token => Err(format!("Oops: parser unimplimented token ({:?})", token)),
+    token => Err(format!("ParseError: got {} but expected one of DoubleQuote,LParen,Word", token.name())),
   };
   eat_whitespace(reader);
   result
@@ -76,7 +76,7 @@ fn parse_atom(reader: &mut Reader) -> Result<Form, String> {
     reader.next();
     Ok(Form::Identifier(word))
   } else {
-    Err(format!("Oops: parser unexpected word ({:?})", reader.next().unwrap()))
+    Err(format!("ParseError: got invalid Word {}", reader.next().unwrap().to_string()))
   }
 }
 
@@ -91,7 +91,7 @@ fn parse_list(reader: &mut Reader) -> Result<Form, String> {
         Ok(form) => accumulator.push(form),
         err @ Err(_) => return err,
       },
-      None => return Err("Oops: parser got unexpected EOF".to_string()),
+      None => return Err("ParseError: got nothing but expected at least RParen (unclosed list)".to_string()),
     };
   };
 
@@ -106,7 +106,7 @@ fn parse_string(reader: &mut Reader) -> Result<Form, String> {
       Some(Token::Backslash) => accumulator.push_str(parse_string_escape(reader).as_str()),
       Some(Token::DoubleQuote) => break,
       Some(token) => accumulator.push_str(token.to_string().as_str()),
-      None => return Err("Oops: parser got unexpected EOF".to_string()),
+      None => return Err("ParseError: got nothing but expected at least DoubleQuote (unclosed string literal)".to_string()),
     };
   };
 
@@ -218,7 +218,10 @@ mod tests {
     let input = vec![
       Token::DoubleQuote,
     ];
-    assert!(parse_all(input).is_err());
+    assert_eq!(
+      parse_all(input),
+      Err("ParseError: got nothing but expected at least DoubleQuote (unclosed string literal)".to_string())
+    );
   }
 
   #[test]
@@ -242,7 +245,7 @@ mod tests {
   #[test]
   fn test_parse_all_identifier_cannot_start_with_number() {
     let input = vec![Token::Word("1abc".to_string())];
-    assert!(parse_all(input).is_err());
+    assert_eq!(parse_all(input), Err("ParseError: got invalid Word 1abc".to_string()));
   }
 
   #[test]
@@ -364,7 +367,10 @@ mod tests {
     let input = vec![
       Token::LParen,
     ];
-    assert!(parse_all(input).is_err())
+    assert_eq!(
+      parse_all(input),
+      Err("ParseError: got nothing but expected at least RParen (unclosed list)".to_string())
+    );
   }
 
   #[test]
@@ -405,6 +411,6 @@ mod tests {
       Token::Word("42".to_string()),
       Token::Word("42".to_string()),
     ];
-    assert!(parse_all(input).is_err());
+    assert_eq!(parse_all(input), Err("ParseError: got Word but expected nothing".to_string()));
   }
 }

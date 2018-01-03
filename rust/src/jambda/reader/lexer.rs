@@ -13,6 +13,21 @@ pub enum Token {
   Word(String),
 }
 
+impl Token {
+  pub fn name(&self) -> &str {
+    match *self {
+      Token::Backslash => "Backslash",
+      Token::DoubleQuote => "DoubleQuote",
+      Token::Semicolon => "Semicolon",
+      Token::LParen => "LParen",
+      Token::RParen => "RParen",
+      Token::Newline => "Newline",
+      Token::Whitespace(_) => "Whitespace",
+      Token::Word(_) => "Word",
+    }
+  }
+}
+
 impl std::string::ToString for Token {
   fn to_string(&self) -> String {
     match *self {
@@ -73,7 +88,7 @@ pub fn tokenize(str: &str) -> Vec<Token> {
       let capture = captures.name("word");
       Token::Word(capture_to_string(capture))
     } else {
-      panic!("Oops: lexer unexpectedly captured without known capture");
+      panic!("LexError: expected a capture but got none (bug)");
     };
     tokens.push(token);
   }
