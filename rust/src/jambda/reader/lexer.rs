@@ -13,6 +13,23 @@ pub enum Token {
   Word(String),
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct Position {
+  line: usize,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct TokenPtr {
+  pub token: Token,
+  pos: Position,
+}
+
+impl std::string::ToString for Position {
+  fn to_string(&self) -> String {
+    self.line.to_string()
+  }
+}
+
 impl Token {
   pub fn name(&self) -> &str {
     match *self {
@@ -43,6 +60,32 @@ impl std::string::ToString for Token {
   }
 }
 
+impl TokenPtr {
+  pub fn from_token(token: Token) -> TokenPtr {
+    TokenPtr{token: token, pos: Position{line: 0}}
+  }
+
+  pub fn position(&self) -> Position {
+    self.pos.clone()
+  }
+
+  pub fn name(&self) -> &str {
+    self.token.name()
+  }
+}
+
+impl PartialEq<Token> for TokenPtr {
+  fn eq(&self, other: &Token) -> bool {
+    self.token == *other
+  }
+}
+
+impl std::string::ToString for TokenPtr {
+  fn to_string(&self) -> String {
+    self.token.to_string()
+  }
+}
+
 const REGEX: &str = r###"(?x)(
 (?P<newline>\n)
 |
@@ -65,14 +108,17 @@ fn capture_to_string(capture: Option<regex::Match>) -> String {
   capture.unwrap().as_str().to_string()
 }
 
-pub fn tokenize(str: &str) -> Vec<Token> {
+pub fn tokenize(str: &str) -> Vec<TokenPtr> {
+  let mut line_no = 1;
   let mut tokens = vec![];
   let re = regex::Regex::new(REGEX).unwrap();
   for captures in re.captures_iter(&str) {
+    let position = Position{line: line_no};
     let token = if captures.name("whitespace").is_some() {
       let capture = captures.name("whitespace");
       Token::Whitespace(capture_to_string(capture))
     } else if captures.name("newline").is_some() {
+      line_no += 1;
       Token::Newline
     } else if captures.name("backslash").is_some() {
       Token::Backslash
@@ -90,7 +136,7 @@ pub fn tokenize(str: &str) -> Vec<Token> {
     } else {
       panic!("LexError: expected a capture but got none (bug)");
     };
-    tokens.push(token);
+    tokens.push(TokenPtr{token: token, pos: position});
   }
   tokens
 }
@@ -102,7 +148,7 @@ mod tests {
   #[test]
   fn test_nothing() {
     let input = "";
-    assert_eq!(tokenize(input), [])
+    assert_eq!(tokenize(input).is_empty(), true)
   }
 
   #[test]

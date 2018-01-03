@@ -17,4 +17,10 @@ mod tests {
     input.push_str(")".repeat(depth).as_str());
     assert!(read(input).is_ok());
   }
+
+  #[test]
+  fn test_parse_error_line_number() {
+    let input = "(foo\n(bar \n42a))".to_string();
+    assert_eq!(read(input), Err("ParseError: [2] got invalid Word 42a".to_string()));
+  }
 }

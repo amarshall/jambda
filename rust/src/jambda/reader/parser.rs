@@ -1,6 +1,8 @@
 use regex;
 use std;
+use jambda::reader::lexer;
 use jambda::reader::lexer::Token;
+use jambda::reader::lexer::TokenPtr;
 
 #[derive(Debug, PartialEq)]
 pub enum Form {
@@ -14,35 +16,52 @@ pub enum Form {
 
 #[derive(Clone, Copy)]
 struct Reader<'a> {
-  tokens: &'a Vec<Token>,
-  position: usize, // the position of next
+  tokens: &'a Vec<TokenPtr>,
+  cursor_pos: usize, // the position of next
 }
 
 impl<'a> Reader<'a> {
-  fn next(&mut self) -> Option<Token> {
-    if self.position < self.tokens.len() {
-      self.position += 1;
-      Some(self.tokens[self.position - 1].to_owned())
+  fn from_tokens(tokens: &Vec<TokenPtr>) -> Reader {
+    Reader{tokens, cursor_pos: 0}
+  }
+
+  fn parse_error(&self, message: String) -> String {
+    format!("ParseError: [{}] {}", self.position().to_string(), message)
+  }
+
+  fn position(&self) -> lexer::Position {
+    let cursor_pos = if self.cursor_pos < self.tokens.len() {
+      self.cursor_pos
+    } else {
+      self.tokens.len() - 1
+    };
+    self.tokens[cursor_pos].position()
+  }
+
+  fn next(&mut self) -> Option<TokenPtr> {
+    if self.cursor_pos < self.tokens.len() {
+      self.cursor_pos += 1;
+      Some(self.tokens[self.cursor_pos - 1].to_owned())
     } else {
       None
     }
   }
 
-  fn peek(&self) -> Option<Token> {
-    if self.position < self.tokens.len() {
-      Some(self.tokens[self.position].to_owned())
+  fn peek(&self) -> Option<TokenPtr> {
+    if self.cursor_pos < self.tokens.len() {
+      Some(self.tokens[self.cursor_pos].to_owned())
     } else {
       None
     }
   }
 }
 
-pub fn parse_all(tokens: Vec<Token>) -> Result<Form, String> {
-  let reader = &mut Reader{tokens: &tokens, position: 0};
+pub fn parse_all(tokens: Vec<TokenPtr>) -> Result<Form, String> {
+  let reader = &mut Reader::from_tokens(&tokens);
   let result = parse_form(reader);
   match result {
     Ok(_) => match reader.peek() {
-      Some(token) => Err(format!("ParseError: got {} but expected nothing", token.name())),
+      Some(token) => Err(reader.parse_error(format!("got {} but expected nothing", token.name()))),
       None => result,
     },
     Err(_) => result,
@@ -51,7 +70,7 @@ pub fn parse_all(tokens: Vec<Token>) -> Result<Form, String> {
 
 fn eat_whitespace(reader: &mut Reader) {
   loop {
-    match reader.peek() {
+    match reader.peek().map(|t| t.token) {
       Some(Token::Newline) => { reader.next(); },
       Some(Token::Whitespace(_)) => { reader.next(); },
       _ => break,
@@ -61,7 +80,7 @@ fn eat_whitespace(reader: &mut Reader) {
 
 fn eat_comment(reader: &mut Reader) {
   loop {
-    match reader.peek() {
+    match reader.peek().map(|t| t.token) {
       Some(Token::Newline) => break,
       None => break,
       _ => reader.next(),
@@ -73,12 +92,12 @@ fn parse_form(reader: &mut Reader) -> Result<Form, String> {
   let mut result;
   loop {
     eat_whitespace(reader);
-    result = match reader.peek() {
+    result = match reader.peek().map(|t| t.token) {
       Some(Token::DoubleQuote) => Some(parse_string(reader)),
       Some(Token::LParen) => Some(parse_list(reader)),
       Some(Token::Semicolon) => { eat_comment(reader); None },
       Some(Token::Word(_)) => Some(parse_atom(reader)),
-      Some(token) => Some(Err(format!("ParseError: got {} but expected one of DoubleQuote,LParen,Word", token.name()))),
+      Some(token) => Some(Err(reader.parse_error(format!("got {} but expected one of DoubleQuote,LParen,Word", token.name())))),
       None => Some(Ok(Form::Nil)),
     };
     if result.is_some() { break };
@@ -101,7 +120,9 @@ fn parse_atom(reader: &mut Reader) -> Result<Form, String> {
     reader.next();
     Ok(Form::Identifier(word))
   } else {
-    Err(format!("ParseError: got invalid Word {}", reader.next().unwrap().to_string()))
+    let err = Err(reader.parse_error(format!("got invalid Word {}", word)));
+    reader.next();
+    err
   }
 }
 
@@ -109,14 +130,14 @@ fn parse_list(reader: &mut Reader) -> Result<Form, String> {
   reader.next();
   let mut accumulator = vec![];
   loop {
-    match reader.peek() {
+    match reader.peek().map(|t| t.token) {
       Some(Token::RParen) => { reader.next(); break },
       Some(Token::Whitespace(_)) => { reader.next(); },
       Some(_) => match parse_form(reader) {
         Ok(form) => accumulator.push(form),
         err @ Err(_) => return err,
       },
-      None => return Err("ParseError: got nothing but expected at least RParen (unclosed list)".to_string()),
+      None => return Err(reader.parse_error(format!("got nothing but expected at least RParen (unclosed list)"))),
     };
   };
 
@@ -127,11 +148,11 @@ fn parse_string(reader: &mut Reader) -> Result<Form, String> {
   reader.next();
   let mut accumulator = "".to_string();
   loop {
-    match reader.next() {
+    match reader.next().map(|t| t.token) {
       Some(Token::Backslash) => accumulator.push_str(parse_string_escape(reader).as_str()),
       Some(Token::DoubleQuote) => break,
       Some(token) => accumulator.push_str(token.to_string().as_str()),
-      None => return Err("ParseError: got nothing but expected at least DoubleQuote (unclosed string literal)".to_string()),
+      None => return Err(reader.parse_error(format!("got nothing but expected at least DoubleQuote (unclosed string literal)"))),
     };
   };
 
@@ -140,7 +161,7 @@ fn parse_string(reader: &mut Reader) -> Result<Form, String> {
 
 fn parse_string_escape(reader: &mut Reader) -> String {
   let newline_re = regex::Regex::new("n(.*)").unwrap();
-  match reader.next() {
+  match reader.next().map(|t| t.token) {
     Some(Token::Backslash) => r"\".to_string(),
     Some(Token::DoubleQuote) => "\"".to_string(),
     Some(Token::Word(word)) => {
@@ -159,6 +180,13 @@ fn parse_string_escape(reader: &mut Reader) -> String {
 mod tests {
   use super::*;
   use jambda::reader::lexer::Token;
+
+  fn parse_all(tokens: Vec<Token>) -> Result<Form, String> {
+    let token_ptrs = tokens.iter()
+      .map(|token| TokenPtr::from_token(token.clone()))
+      .collect::<Vec<TokenPtr>>();
+    super::parse_all(token_ptrs)
+  }
 
   #[test]
   fn test_parse_all_nothing() {
@@ -289,7 +317,7 @@ mod tests {
     ];
     assert_eq!(
       parse_all(input),
-      Err("ParseError: got nothing but expected at least DoubleQuote (unclosed string literal)".to_string())
+      Err("ParseError: [0] got nothing but expected at least DoubleQuote (unclosed string literal)".to_string())
     );
   }
 
@@ -314,7 +342,7 @@ mod tests {
   #[test]
   fn test_parse_all_identifier_cannot_start_with_number() {
     let input = vec![Token::Word("1abc".to_string())];
-    assert_eq!(parse_all(input), Err("ParseError: got invalid Word 1abc".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0] got invalid Word 1abc".to_string()));
   }
 
   #[test]
@@ -350,7 +378,7 @@ mod tests {
   #[test]
   fn test_parse_all_integer_underscore_at_end_is_word() {
     let input = vec![Token::Word("42_".to_string())];
-    assert_eq!(parse_all(input), Err("ParseError: got invalid Word 42_".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0] got invalid Word 42_".to_string()));
   }
 
   #[test]
@@ -386,19 +414,19 @@ mod tests {
   #[test]
   fn test_parse_all_float_underscore_at_left_end_is_word() {
     let input = vec![Token::Word("4_.2".to_string())];
-    assert_eq!(parse_all(input), Err("ParseError: got invalid Word 4_.2".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0] got invalid Word 4_.2".to_string()));
   }
 
   #[test]
   fn test_parse_all_float_underscore_at_right_end_is_word() {
     let input = vec![Token::Word("4._2".to_string())];
-    assert_eq!(parse_all(input), Err("ParseError: got invalid Word 4._2".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0] got invalid Word 4._2".to_string()));
   }
 
   #[test]
   fn test_parse_all_float_underscore_at_end_is_word() {
     let input = vec![Token::Word("4.2_".to_string())];
-    assert_eq!(parse_all(input), Err("ParseError: got invalid Word 4.2_".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0] got invalid Word 4.2_".to_string()));
   }
 
   #[test]
@@ -504,7 +532,7 @@ mod tests {
     ];
     assert_eq!(
       parse_all(input),
-      Err("ParseError: got nothing but expected at least RParen (unclosed list)".to_string())
+      Err("ParseError: [0] got nothing but expected at least RParen (unclosed list)".to_string())
     );
   }
 
@@ -546,7 +574,7 @@ mod tests {
       Token::Word("42a".to_string()),
       Token::Word("42".to_string()),
     ];
-    assert_eq!(parse_all(input), Err("ParseError: got invalid Word 42a".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0] got invalid Word 42a".to_string()));
   }
 
   #[test]
@@ -555,6 +583,6 @@ mod tests {
       Token::Word("42".to_string()),
       Token::Word("42".to_string()),
     ];
-    assert_eq!(parse_all(input), Err("ParseError: got Word but expected nothing".to_string()));
+    assert_eq!(parse_all(input), Err("ParseError: [0] got Word but expected nothing".to_string()));
   }
 }
