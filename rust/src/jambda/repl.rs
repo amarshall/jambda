@@ -1,15 +1,12 @@
 extern crate rustyline;
+use jambda::reader;
 
-fn read(str: String) -> String {
-  str
-}
-
-fn eval(ast: String) -> String {
+fn eval(ast: reader::parser::Type) -> reader::parser::Type {
   ast
 }
 
-fn print(exp: String) -> String {
-  exp
+fn print(exp: reader::parser::Type) -> String {
+  format!("{:?}", exp)
 }
 
 pub fn run() {
@@ -17,7 +14,7 @@ pub fn run() {
   loop {
     match editor.readline("∎ ") {
       Ok(line) => {
-        println!("{:?}", print(eval(read(line))));
+        println!("{:?}", print(eval(reader::read(line))));
       }
       Err(rustyline::error::ReadlineError::Eof) => {
         break
