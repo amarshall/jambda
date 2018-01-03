@@ -37,7 +37,11 @@ impl<'a> Reader<'a> {
 
 pub fn parse_all(tokens: Vec<Token>) -> Result<Type, String> {
   let reader = &mut Reader{tokens: &tokens, position: 0};
-  parse_form(reader)
+  let result = parse_form(reader);
+  match reader.peek() {
+    Some(token) => Err(format!("Oops: parser expected EOF but got: {:?}", token)),
+    None => result
+  }
 }
 
 fn eat_whitespace(reader: &mut Reader) {
@@ -373,5 +377,14 @@ mod tests {
       Token::Whitespace(" ".to_string()),
     ];
     assert_eq!(parse_all(input).unwrap(), Type::Integer(42));
+  }
+
+  #[test]
+  fn test_parse_all_trailing_tokens() {
+    let input = vec![
+      Token::Word("42".to_string()),
+      Token::Word("42".to_string()),
+    ];
+    assert!(parse_all(input).is_err());
   }
 }
