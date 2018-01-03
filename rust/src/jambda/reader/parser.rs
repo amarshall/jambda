@@ -35,47 +35,51 @@ impl<'a> Reader<'a> {
   }
 }
 
-pub fn parse_all(tokens: Vec<Token>) -> Type {
+pub fn parse_all(tokens: Vec<Token>) -> Result<Type, String> {
   let reader = &mut Reader{tokens: &tokens, position: 0};
   parse_form(reader)
 }
 
-fn parse_form(reader: &mut Reader) -> Type {
+fn parse_form(reader: &mut Reader) -> Result<Type, String> {
   match reader.peek().unwrap() {
     Token::DoubleQuote => parse_string(reader),
     Token::LParen => parse_list(reader),
     Token::Word(_) => parse_atom(reader),
-    token => panic!(format!("Oops: parser unimplimented token ({:?})", token)),
+    token => Err(format!("Oops: parser unimplimented token ({:?})", token)),
   }
 }
 
-fn parse_atom(reader: &mut Reader) -> Type {
+fn parse_atom(reader: &mut Reader) -> Result<Type, String> {
   let word = reader.peek().unwrap().to_string();
   if regex::Regex::new(r"^[+-]?\d+$").unwrap().is_match(word.as_str()) {
     let val = reader.next().unwrap().to_string().parse::<isize>().unwrap();
-    Type::Integer(val)
+    Ok(Type::Integer(val))
   } else if regex::Regex::new(r"^[^\d]").unwrap().is_match(word.as_str()) {
     reader.next();
-    Type::Identifier(word)
+    Ok(Type::Identifier(word))
   } else {
-    panic!(format!("Oops: parser unexpected word ({:?})", reader.next().unwrap()))
+    Err(format!("Oops: parser unexpected word ({:?})", reader.next().unwrap()))
   }
 }
 
-fn parse_list(reader: &mut Reader) -> Type {
+fn parse_list(reader: &mut Reader) -> Result<Type, String> {
   reader.next();
   let mut accumulator = vec![];
   while let Some(token) = reader.peek() {
     match token {
       Token::RParen => { reader.next(); break },
       Token::Whitespace(_) => { reader.next(); },
-      _ => accumulator.push(parse_form(reader)),
+      _ => match parse_form(reader) {
+        Ok(form) => accumulator.push(form),
+        err @ Err(_) => return err,
+      },
     };
-  }
-  Type::List(accumulator)
+  };
+
+  Ok(Type::List(accumulator))
 }
 
-fn parse_string(reader: &mut Reader) -> Type {
+fn parse_string(reader: &mut Reader) -> Result<Type, String> {
   reader.next();
   let mut accumulator = "".to_string();
   while let Some(token) = reader.next() {
@@ -86,7 +90,7 @@ fn parse_string(reader: &mut Reader) -> Type {
     };
   };
 
-  Type::String(accumulator)
+  Ok(Type::String(accumulator))
 }
 
 fn parse_string_escape(reader: &mut Reader) -> String {
@@ -109,7 +113,7 @@ mod tests {
       Token::DoubleQuote,
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input), Type::String("".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Type::String("".to_string()));
   }
 
   #[test]
@@ -119,7 +123,7 @@ mod tests {
       Token::Word("foo".to_string()),
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input), Type::String("foo".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Type::String("foo".to_string()));
   }
 
   #[test]
@@ -133,7 +137,7 @@ mod tests {
       Token::Newline,
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input), Type::String("foo  \t bar(\n".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Type::String("foo  \t bar(\n".to_string()));
   }
 
   #[test]
@@ -143,7 +147,7 @@ mod tests {
       Token::Backslash,
       Token::Backslash,
     ];
-    assert_eq!(parse_all(input), Type::String(r"\".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Type::String(r"\".to_string()));
   }
 
   #[test]
@@ -155,7 +159,7 @@ mod tests {
       Token::Word("foo".to_string()),
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input), Type::String("\"foo".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Type::String("\"foo".to_string()));
   }
 
   #[test]
@@ -166,56 +170,55 @@ mod tests {
       Token::Word("foo".to_string()),
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input), Type::String("\\foo".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Type::String("\\foo".to_string()));
   }
 
   #[test]
   fn test_parse_all_identifier_alpha() {
     let input = vec![Token::Word("foo".to_string())];
-    assert_eq!(parse_all(input), Type::Identifier("foo".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Type::Identifier("foo".to_string()));
   }
 
   #[test]
   fn test_parse_all_identifier_alphanumeric() {
     let input = vec![Token::Word("a1b2".to_string())];
-    assert_eq!(parse_all(input), Type::Identifier("a1b2".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Type::Identifier("a1b2".to_string()));
   }
 
   #[test]
   fn test_parse_all_identifier_unicode() {
     let input = vec![Token::Word("ƒøø".to_string())];
-    assert_eq!(parse_all(input), Type::Identifier("ƒøø".to_string()));
+    assert_eq!(parse_all(input).unwrap(), Type::Identifier("ƒøø".to_string()));
   }
 
   #[test]
-  #[should_panic]
   fn test_parse_all_identifier_cannot_start_with_number() {
     let input = vec![Token::Word("1abc".to_string())];
-    parse_all(input);
+    assert!(parse_all(input).is_err());
   }
 
   #[test]
   fn test_parse_all_integer() {
     let input = vec![Token::Word("42".to_string())];
-    assert_eq!(parse_all(input), Type::Integer(42));
+    assert_eq!(parse_all(input).unwrap(), Type::Integer(42));
   }
 
   #[test]
   fn test_parse_all_integer_positive() {
     let input = vec![Token::Word("+42".to_string())];
-    assert_eq!(parse_all(input), Type::Integer(42));
+    assert_eq!(parse_all(input).unwrap(), Type::Integer(42));
   }
 
   #[test]
   fn test_parse_all_integer_negative() {
     let input = vec![Token::Word("-42".to_string())];
-    assert_eq!(parse_all(input), Type::Integer(-42));
+    assert_eq!(parse_all(input).unwrap(), Type::Integer(-42));
   }
 
   #[test]
   fn test_parse_all_list_empty() {
     let input = vec![Token::LParen, Token::RParen];
-    assert_eq!(parse_all(input), Type::List(vec![]));
+    assert_eq!(parse_all(input).unwrap(), Type::List(vec![]));
   }
 
   #[test]
@@ -225,7 +228,7 @@ mod tests {
       Token::Word("42".to_string()),
       Token::RParen,
     ];
-    assert_eq!(parse_all(input), Type::List(vec![Type::Integer(42)]));
+    assert_eq!(parse_all(input).unwrap(), Type::List(vec![Type::Integer(42)]));
   }
 
   #[test]
@@ -238,7 +241,7 @@ mod tests {
       Token::DoubleQuote,
       Token::RParen,
     ];
-    assert_eq!(parse_all(input), Type::List(vec![
+    assert_eq!(parse_all(input).unwrap(), Type::List(vec![
       Type::Integer(42),
       Type::String("42".to_string()),
     ]));
@@ -253,7 +256,7 @@ mod tests {
       Token::Word("42".to_string()),
       Token::RParen,
     ];
-    assert_eq!(parse_all(input), Type::List(vec![
+    assert_eq!(parse_all(input).unwrap(), Type::List(vec![
       Type::Integer(42),
       Type::Integer(42),
     ]));
@@ -269,7 +272,7 @@ mod tests {
       Token::RParen,
       Token::RParen,
     ];
-    assert_eq!(parse_all(input),
+    assert_eq!(parse_all(input).unwrap(),
       Type::List(vec![
         Type::List(vec![
           Type::List(vec![]),
@@ -293,7 +296,7 @@ mod tests {
       Token::Word("5".to_string()),
       Token::RParen,
     ];
-    assert_eq!(parse_all(input),
+    assert_eq!(parse_all(input).unwrap(),
       Type::List(vec![
         Type::Integer(1),
         Type::List(vec![

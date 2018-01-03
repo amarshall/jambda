@@ -1,12 +1,12 @@
 extern crate rustyline;
 use jambda::reader;
 
-fn eval(ast: reader::parser::Type) -> reader::parser::Type {
+fn eval(ast: Result<reader::parser::Type, String>) -> Result<reader::parser::Type, String> {
   ast
 }
 
-fn print(exp: reader::parser::Type) -> String {
-  format!("{:?}", exp)
+fn print(exp: Result<reader::parser::Type, String>) -> Result<String, String> {
+  exp.map(|form| format!("{:?}", form))
 }
 
 pub fn run() {
@@ -15,7 +15,10 @@ pub fn run() {
     match editor.readline("∎ ") {
       Ok(line) => {
         editor.add_history_entry(&line);
-        println!("{:?}", print(eval(reader::read(line))));
+        match print(eval(reader::read(line))) {
+          Ok(string) => println!("{}", string),
+          Err(string) => eprintln!("{}", string),
+        }
       }
       Err(rustyline::error::ReadlineError::Eof) => {
         break
