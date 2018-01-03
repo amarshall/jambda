@@ -71,9 +71,9 @@ fn parse_form(reader: &mut Reader) -> Result<Form, String> {
 
 fn parse_atom(reader: &mut Reader) -> Result<Form, String> {
   let word = reader.peek().unwrap().to_string();
-  if regex::Regex::new(r"^[+-]?\d+$").unwrap().is_match(word.as_str()) {
+  if regex::Regex::new(r"^[+-]?(\d+|\d(\d|_)+\d)$").unwrap().is_match(word.as_str()) {
     reader.next();
-    let val = word.parse::<isize>().unwrap();
+    let val = word.replace("_", "").parse::<isize>().unwrap();
     Ok(Form::Integer(val))
   } else if regex::Regex::new(r"^[^\d]").unwrap().is_match(word.as_str()) {
     reader.next();
@@ -267,6 +267,24 @@ mod tests {
   fn test_parse_all_integer_negative() {
     let input = vec![Token::Word("-42".to_string())];
     assert_eq!(parse_all(input).unwrap(), Form::Integer(-42));
+  }
+
+  #[test]
+  fn test_parse_all_integer_underscore() {
+    let input = vec![Token::Word("4_200".to_string())];
+    assert_eq!(parse_all(input).unwrap(), Form::Integer(4200));
+  }
+
+  #[test]
+  fn test_parse_all_integer_underscore_at_start_is_word() {
+    let input = vec![Token::Word("_42".to_string())];
+    assert_eq!(parse_all(input).unwrap(), Form::Identifier("_42".to_string()));
+  }
+
+  #[test]
+  fn test_parse_all_integer_underscore_at_end_is_word() {
+    let input = vec![Token::Word("42_".to_string())];
+    assert_eq!(parse_all(input), Err("ParseError: got invalid Word 42_".to_string()));
   }
 
   #[test]
