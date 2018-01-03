@@ -1,8 +1,10 @@
+use regex;
 use std;
 use jambda::reader::lexer::Token;
 
 #[derive(Debug, PartialEq)]
 pub enum Type {
+  Integer(isize),
   String(std::string::String),
 }
 
@@ -38,12 +40,22 @@ pub fn parse_all(tokens: Vec<Token>) -> Vec<Type> {
   while let Some(token) = reader.peek() {
     let node = match token {
       Token::DoubleQuote => parse_string(reader),
+      Token::Word(_) => parse_atom(reader),
       _ => panic!(format!("Oops: parser unimplimented token ({:?})", token)),
     };
     nodes.push(node);
   };
 
   nodes
+}
+
+fn parse_atom(reader: &mut Reader) -> Type {
+  if regex::Regex::new(r"^[+-]?\d+$").unwrap().is_match(reader.peek().unwrap().to_string().as_str()) {
+    let val = reader.next().unwrap().to_string().parse::<isize>().unwrap();
+    Type::Integer(val)
+  } else {
+    panic!(format!("Oops: parser unexpected word ({:?})", reader.next().unwrap()))
+  }
 }
 
 fn parse_string(reader: &mut Reader) -> Type {
@@ -138,5 +150,23 @@ mod tests {
       Token::DoubleQuote,
     ];
     assert_eq!(parse_all(input), [Type::String("\\foo".to_string())]);
+  }
+
+  #[test]
+  fn test_parse_all_integer() {
+    let input = vec![Token::Word("42".to_string())];
+    assert_eq!(parse_all(input), [Type::Integer(42)]);
+  }
+
+  #[test]
+  fn test_parse_all_integer_positive() {
+    let input = vec![Token::Word("+42".to_string())];
+    assert_eq!(parse_all(input), [Type::Integer(42)]);
+  }
+
+  #[test]
+  fn test_parse_all_integer_negative() {
+    let input = vec![Token::Word("-42".to_string())];
+    assert_eq!(parse_all(input), [Type::Integer(-42)]);
   }
 }
