@@ -35,16 +35,9 @@ impl<'a> Reader<'a> {
   }
 }
 
-pub fn parse_all(tokens: Vec<Token>) -> Vec<Type> {
-  let mut nodes = vec![];
+pub fn parse_all(tokens: Vec<Token>) -> Type {
   let reader = &mut Reader{tokens: &tokens, position: 0};
-
-  while let Some(_) = reader.peek() {
-    let node = parse_form(reader);
-    nodes.push(node);
-  };
-
-  nodes
+  parse_form(reader)
 }
 
 fn parse_form(reader: &mut Reader) -> Type {
@@ -115,7 +108,7 @@ mod tests {
       Token::DoubleQuote,
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input), [Type::String("".to_string())]);
+    assert_eq!(parse_all(input), Type::String("".to_string()));
   }
 
   #[test]
@@ -125,7 +118,7 @@ mod tests {
       Token::Word("foo".to_string()),
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input), [Type::String("foo".to_string())]);
+    assert_eq!(parse_all(input), Type::String("foo".to_string()));
   }
 
   #[test]
@@ -139,7 +132,7 @@ mod tests {
       Token::Newline,
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input), [Type::String("foo  \t bar(\n".to_string())]);
+    assert_eq!(parse_all(input), Type::String("foo  \t bar(\n".to_string()));
   }
 
   #[test]
@@ -149,7 +142,7 @@ mod tests {
       Token::Backslash,
       Token::Backslash,
     ];
-    assert_eq!(parse_all(input), [Type::String(r"\".to_string())]);
+    assert_eq!(parse_all(input), Type::String(r"\".to_string()));
   }
 
   #[test]
@@ -161,7 +154,7 @@ mod tests {
       Token::Word("foo".to_string()),
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input), [Type::String("\"foo".to_string())]);
+    assert_eq!(parse_all(input), Type::String("\"foo".to_string()));
   }
 
   #[test]
@@ -172,25 +165,25 @@ mod tests {
       Token::Word("foo".to_string()),
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input), [Type::String("\\foo".to_string())]);
+    assert_eq!(parse_all(input), Type::String("\\foo".to_string()));
   }
 
   #[test]
   fn test_parse_all_identifier_alpha() {
     let input = vec![Token::Word("foo".to_string())];
-    assert_eq!(parse_all(input), [Type::Identifier("foo".to_string())]);
+    assert_eq!(parse_all(input), Type::Identifier("foo".to_string()));
   }
 
   #[test]
   fn test_parse_all_identifier_alphanumeric() {
     let input = vec![Token::Word("a1b2".to_string())];
-    assert_eq!(parse_all(input), [Type::Identifier("a1b2".to_string())]);
+    assert_eq!(parse_all(input), Type::Identifier("a1b2".to_string()));
   }
 
   #[test]
   fn test_parse_all_identifier_unicode() {
     let input = vec![Token::Word("ƒøø".to_string())];
-    assert_eq!(parse_all(input), [Type::Identifier("ƒøø".to_string())]);
+    assert_eq!(parse_all(input), Type::Identifier("ƒøø".to_string()));
   }
 
   #[test]
@@ -203,25 +196,25 @@ mod tests {
   #[test]
   fn test_parse_all_integer() {
     let input = vec![Token::Word("42".to_string())];
-    assert_eq!(parse_all(input), [Type::Integer(42)]);
+    assert_eq!(parse_all(input), Type::Integer(42));
   }
 
   #[test]
   fn test_parse_all_integer_positive() {
     let input = vec![Token::Word("+42".to_string())];
-    assert_eq!(parse_all(input), [Type::Integer(42)]);
+    assert_eq!(parse_all(input), Type::Integer(42));
   }
 
   #[test]
   fn test_parse_all_integer_negative() {
     let input = vec![Token::Word("-42".to_string())];
-    assert_eq!(parse_all(input), [Type::Integer(-42)]);
+    assert_eq!(parse_all(input), Type::Integer(-42));
   }
 
   #[test]
   fn test_parse_all_list_empty() {
     let input = vec![Token::LParen, Token::RParen];
-    assert_eq!(parse_all(input), [Type::List(vec![])]);
+    assert_eq!(parse_all(input), Type::List(vec![]));
   }
 
   #[test]
@@ -231,7 +224,7 @@ mod tests {
       Token::Word("42".to_string()),
       Token::RParen,
     ];
-    assert_eq!(parse_all(input), [Type::List(vec![Type::Integer(42)])]);
+    assert_eq!(parse_all(input), Type::List(vec![Type::Integer(42)]));
   }
 
   #[test]
@@ -244,10 +237,10 @@ mod tests {
       Token::DoubleQuote,
       Token::RParen,
     ];
-    assert_eq!(parse_all(input), [Type::List(vec![
+    assert_eq!(parse_all(input), Type::List(vec![
       Type::Integer(42),
       Type::String("42".to_string()),
-    ])]);
+    ]));
   }
 
   #[test]
@@ -260,13 +253,13 @@ mod tests {
       Token::RParen,
       Token::RParen,
     ];
-    assert_eq!(parse_all(input), [
+    assert_eq!(parse_all(input),
       Type::List(vec![
         Type::List(vec![
           Type::List(vec![]),
         ]),
-      ]),
-    ]);
+      ])
+    );
   }
 
   #[test]
@@ -284,7 +277,7 @@ mod tests {
       Token::Word("5".to_string()),
       Token::RParen,
     ];
-    assert_eq!(parse_all(input), [
+    assert_eq!(parse_all(input),
       Type::List(vec![
         Type::Integer(1),
         Type::List(vec![
@@ -295,7 +288,7 @@ mod tests {
           Type::Integer(4),
         ]),
         Type::Integer(5),
-      ]),
-    ]);
+      ])
+    );
   }
 }
