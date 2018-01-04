@@ -1,8 +1,8 @@
 use jambda::types::Form;
 
-pub fn print(form: Result<Form, String>) -> Result<String, String> {
-  form.map(|form2| match form2 {
-    Form::Nothing => "".to_string(),
-    _ => format!("{:?}", form2),
-  })
+pub fn print(ast: Form) -> Result<String, String> {
+  match ast {
+    Form::Nothing => Ok("".to_string()),
+    _ => Ok(format!("{:?}", ast)),
+  }
 }

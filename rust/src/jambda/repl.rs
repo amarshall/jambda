@@ -1,14 +1,14 @@
 extern crate rustyline;
+use jambda::evaluator;
 use jambda::printer;
 use jambda::reader;
-use jambda::types::Form;
-
-fn eval(ast: Result<Form, String>) -> Result<Form, String> {
-  ast
-}
 
 pub fn rep(input: String) {
-  match printer::print(eval(reader::read(input))) {
+  let result = reader::read(input)
+    .and_then(|o| evaluator::eval(o))
+    .and_then(|o| printer::print(o));
+
+  match result {
     Ok(string) => println!("{}", string),
     Err(string) => eprintln!("{}", string),
   };
