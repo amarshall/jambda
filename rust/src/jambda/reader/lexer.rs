@@ -1,3 +1,4 @@
+use jambda::types::{SourcePosition};
 use regex;
 use std;
 
@@ -14,21 +15,9 @@ pub enum Token {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Position {
-  line: usize,
-  char: usize,
-}
-
-#[derive(Clone, Debug, PartialEq)]
 pub struct TokenPtr {
   pub token: Token,
-  pos: Position,
-}
-
-impl std::string::ToString for Position {
-  fn to_string(&self) -> String {
-    format!("{}:{}", self.line, self.char)
-  }
+  pos: SourcePosition,
 }
 
 impl Token {
@@ -71,10 +60,10 @@ impl std::string::ToString for Token {
 
 impl TokenPtr {
   pub fn from_token(token: Token) -> TokenPtr {
-    TokenPtr{token: token, pos: Position{line: 0, char: 0}}
+    TokenPtr{token: token, pos: SourcePosition::new(0, 0)}
   }
 
-  pub fn position(&self) -> Position {
+  pub fn position(&self) -> SourcePosition {
     self.pos.clone()
   }
 
@@ -123,7 +112,7 @@ pub fn tokenize(str: &str) -> Vec<TokenPtr> {
   let mut tokens = vec![];
   let re = regex::Regex::new(REGEX).unwrap();
   for captures in re.captures_iter(&str) {
-    let position = Position{line: line_no, char: char_no};
+    let position = SourcePosition::new(line_no, char_no);
     let token = if captures.name("whitespace").is_some() {
       let capture = captures.name("whitespace");
       Token::Whitespace(capture_to_string(capture))

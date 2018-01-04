@@ -1,6 +1,6 @@
 use regex;
-use jambda::types::Form;
-use jambda::reader::lexer::{self, Token, TokenPtr};
+use jambda::types::{Form, SourcePosition};
+use jambda::reader::lexer::{Token, TokenPtr};
 
 #[derive(Clone, Copy)]
 struct Reader<'a> {
@@ -17,7 +17,7 @@ impl<'a> Reader<'a> {
     format!("ParseError: [{}] {}", self.position().to_string(), message)
   }
 
-  fn position(&self) -> lexer::Position {
+  fn position(&self) -> SourcePosition {
     let cursor_pos = if self.cursor_pos < self.tokens.len() {
       self.cursor_pos
     } else {

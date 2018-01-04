@@ -14,3 +14,21 @@ pub enum Form {
   List(Vec<Form>),
   String(String),
 }
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct SourcePosition {
+  line: usize,
+  char: usize,
+}
+
+impl SourcePosition {
+  pub fn new(line: usize, char: usize) -> SourcePosition {
+    SourcePosition{line, char}
+  }
+}
+
+impl ToString for SourcePosition {
+  fn to_string(&self) -> String {
+    format!("{}:{}", self.line, self.char)
+  }
+}
