@@ -9,7 +9,7 @@ pub enum Form {
   Float(f64),
   Identifier(std::string::String),
   Integer(isize),
-  Nil,
+  Nothing,
   List(Vec<Form>),
   String(std::string::String),
 }
@@ -100,7 +100,7 @@ fn parse_form(reader: &mut Reader) -> Result<Form, String> {
       Some(Token::Semicolon) => { eat_comment(reader); None },
       Some(Token::Word(_)) => Some(parse_atom(reader)),
       Some(token) => Some(Err(reader.parse_error(format!("got {} but expected one of DoubleQuote,LParen,SemiColon,Word", token.name())))),
-      None => Some(Ok(Form::Nil)),
+      None => Some(Ok(Form::Nothing)),
     };
     if result.is_some() { break };
   }
@@ -193,13 +193,13 @@ mod tests {
   #[test]
   fn test_parse_all_nothing() {
     let input = vec![];
-    assert_eq!(parse_all(input).unwrap(), Form::Nil);
+    assert_eq!(parse_all(input).unwrap(), Form::Nothing);
   }
 
   #[test]
   fn test_parse_all_whitespace() {
     let input = vec![Token::Whitespace(" ".to_string())];
-    assert_eq!(parse_all(input).unwrap(), Form::Nil);
+    assert_eq!(parse_all(input).unwrap(), Form::Nothing);
   }
 
   #[test]
@@ -214,7 +214,7 @@ mod tests {
       Token::Backslash,
       Token::DoubleQuote,
     ];
-    assert_eq!(parse_all(input).unwrap(), Form::Nil);
+    assert_eq!(parse_all(input).unwrap(), Form::Nothing);
   }
 
   #[test]
