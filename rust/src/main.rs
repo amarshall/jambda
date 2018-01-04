@@ -17,6 +17,6 @@ fn main() {
   if atty::is(atty::Stream::Stdout) {
     jambda::repl::run();
   } else {
-    jambda::repl::rep(read_stdin());
+    jambda::repl::repp(read_stdin());
   }
 }
