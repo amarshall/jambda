@@ -6,6 +6,7 @@ use jambda::reader::lexer::TokenPtr;
 
 #[derive(Debug, PartialEq)]
 pub enum Form {
+  Boolean(bool),
   Float(f64),
   Identifier(std::string::String),
   Integer(isize),
@@ -118,6 +119,12 @@ fn parse_atom(reader: &mut Reader) -> Result<Form, String> {
     reader.next();
     let val = word.replace("_", "").parse::<f64>().unwrap();
     Ok(Form::Float(val))
+  } else if regex::Regex::new(r"^false$").unwrap().is_match(word.as_str()) {
+    reader.next();
+    Ok(Form::Boolean(false))
+  } else if regex::Regex::new(r"^true$").unwrap().is_match(word.as_str()) {
+    reader.next();
+    Ok(Form::Boolean(true))
   } else if regex::Regex::new(r"^[^\d]").unwrap().is_match(word.as_str()) {
     reader.next();
     Ok(Form::Identifier(word))
@@ -536,6 +543,18 @@ mod tests {
       parse_all(input),
       Err("ParseError: [0:0] got nothing but expected at least RParen (unclosed list)".to_string())
     );
+  }
+
+  #[test]
+  fn test_parse_boolean_false() {
+    let input = vec![Token::Word("false".to_string())];
+    assert_eq!(parse_all(input).unwrap(), Form::Boolean(false));
+  }
+
+  #[test]
+  fn test_parse_boolean_true() {
+    let input = vec![Token::Word("true".to_string())];
+    assert_eq!(parse_all(input).unwrap(), Form::Boolean(true));
   }
 
   #[test]
