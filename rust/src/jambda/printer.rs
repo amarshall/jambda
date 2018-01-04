@@ -1,4 +1,4 @@
-use jambda::reader::parser::Form;
+use jambda::types::Form;
 
 pub fn print(form: Result<Form, String>) -> Result<String, String> {
   form.map(|form2| match form2 {

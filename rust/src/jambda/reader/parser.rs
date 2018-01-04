@@ -1,19 +1,6 @@
 use regex;
-use std;
-use jambda::reader::lexer;
-use jambda::reader::lexer::Token;
-use jambda::reader::lexer::TokenPtr;
-
-#[derive(Debug, PartialEq)]
-pub enum Form {
-  Boolean(bool),
-  Float(f64),
-  Identifier(std::string::String),
-  Integer(isize),
-  Nothing,
-  List(Vec<Form>),
-  String(std::string::String),
-}
+use jambda::types::Form;
+use jambda::reader::lexer::{self, Token, TokenPtr};
 
 #[derive(Clone, Copy)]
 struct Reader<'a> {

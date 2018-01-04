@@ -1,8 +1,9 @@
 extern crate rustyline;
 use jambda::printer;
 use jambda::reader;
+use jambda::types::Form;
 
-fn eval(ast: Result<reader::parser::Form, String>) -> Result<reader::parser::Form, String> {
+fn eval(ast: Result<Form, String>) -> Result<Form, String> {
   ast
 }
 
