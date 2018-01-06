@@ -18,4 +18,10 @@ mod tests {
     let input = "(+ 1 2)";
     assert_eq!(rep(input), Ok("Integer(3)".to_string()));
   }
+
+  #[test]
+  fn test_fn_call_nested() {
+    let input = "(+ 1 (+ 2 3))";
+    assert_eq!(rep(input), Ok("Integer(6)".to_string()));
+  }
 }
