@@ -1,4 +1,5 @@
 use jambda::types::{Env, Form, RForm};
+use jambda::printer::print;
 
 fn add(forms: Vec<Form>) -> RForm {
   let rsum = forms.iter().map(|form| {
@@ -10,9 +11,17 @@ fn add(forms: Vec<Form>) -> RForm {
   rsum.map(|sum| Form::Integer(sum))
 }
 
+fn println(forms: Vec<Form>) -> RForm {
+  for form in forms {
+    println!("{}", print(form).unwrap());
+  }
+  Ok(Form::Nothing)
+}
+
 pub fn make() -> Env {
   let mut env = Env::new();
   env.insert("+".to_string(), Form::Function(add));
+  env.insert("println".to_string(), Form::Function(println));
   env
 }
 
