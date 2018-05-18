@@ -12,7 +12,7 @@ pub fn rep(input: String) -> Result<String, String> {
 
 pub fn repp(input: String) {
   match rep(input) {
-    Ok(string) => println!("{}", string),
+    Ok(string) => println!("∎ {}", string),
     Err(string) => eprintln!("{}", string),
   };
 }
@@ -20,7 +20,7 @@ pub fn repp(input: String) {
 pub fn run() {
   let mut editor = rustyline::Editor::<()>::new();
   loop {
-    match editor.readline("∎ ") {
+    match editor.readline("λ ") {
       Ok(line) => {
         editor.add_history_entry(&line);
         repp(line);

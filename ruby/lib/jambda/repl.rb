@@ -8,7 +8,7 @@ module Jambda::REPL; end
 
 class << Jambda::REPL
   def loop
-    while line = Readline.readline('jambda> ', true)
+    while line = Readline.readline('λ ', true)
       begin
         $stdout.printf "∎ %s\n", rep(line)
       rescue Jambda::Error => ex
