@@ -1,0 +1,20 @@
+name:                jambda
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/amarshall/jambda/tree/haskell#readme
+license-file:        LICENSE
+author:              J. Andrew Marshall
+copyright:           2018 J. Andrew Marshall
+build-type:          Simple
+cabal-version:       >=1.10
+extra-source-files:  README.md
+
+executable jambda
+  hs-source-dirs:      src
+  main-is:             Main.hs
+  default-language:    Haskell2010
+  build-depends:
+    base >= 4.7 && < 5,
+    flow == 1.0.*,
+    haskeline >= 0.7
