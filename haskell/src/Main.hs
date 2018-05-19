@@ -1,19 +1,17 @@
 module Main where
 
-import Flow
+import Jambda.Evaluator
+import Jambda.Reader
+import Jambda.Types
 import qualified System.Console.Haskeline as Hline
+import System.Posix.IO (stdInput)
+import System.Posix.Terminal (queryTerminal)
 
-jread :: String -> String
-jread x = x
+jprint :: JForm -> Maybe String
+jprint x = Just $ show x
 
-jeval :: String -> String
-jeval x = x
-
-jprint :: String -> String
-jprint x = x
-
-rep :: String -> String
-rep x = x |> jread |> jeval |> jprint
+rep :: String -> Maybe String
+rep x = Just x >>= jread >>= jeval >>= jprint
 
 repl :: IO ()
 repl =
@@ -24,11 +22,19 @@ repl =
       minput <- Hline.getInputLine "λ "
       case minput of
         Nothing -> return ()
-        Just "quit" -> return ()
         Just input -> do
-          input |> (++) "∎ " |> Hline.outputStrLn
+          case rep input of
+            Nothing -> Hline.outputStrLn "!!ERROR"
+            Just out -> Hline.outputStrLn $ "∎ " ++ out
           loop
 
 main :: IO ()
 main = do
-  repl
+  isTTY <- queryTerminal stdInput
+  if isTTY
+    then repl
+    else do
+      input <- getContents
+      case rep input of
+        Nothing -> putStrLn "!!ERROR"
+        Just out -> putStrLn out
