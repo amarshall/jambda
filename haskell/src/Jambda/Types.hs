@@ -4,11 +4,12 @@ where
 import qualified Data.HashMap.Strict as HMap
 
 type JEnv = HMap.HashMap String JForm
+type JResult = Either String JForm
 
 data JForm =
   JBoolean Bool |
   JFloat Double |
-  JFunction ([JForm] -> JForm) |
+  JFunction ([JForm] -> JResult) |
   JIdentifier String |
   JInteger Integer |
   JList [JForm] |

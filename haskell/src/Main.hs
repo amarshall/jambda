@@ -7,11 +7,11 @@ import qualified System.Console.Haskeline as Hline
 import System.Posix.IO (stdInput)
 import System.Posix.Terminal (queryTerminal)
 
-jprint :: JForm -> Maybe String
-jprint x = Just $ show x
+jprint :: JForm -> Either String String
+jprint x = Right $ show x
 
-rep :: String -> Maybe String
-rep x = Just x >>= jread >>= jeval >>= jprint
+rep :: String -> Either String String
+rep x = Right x >>= jread >>= jeval >>= jprint
 
 repl :: IO ()
 repl =
@@ -24,8 +24,8 @@ repl =
         Nothing -> return ()
         Just input -> do
           case rep input of
-            Nothing -> Hline.outputStrLn "!!ERROR"
-            Just out -> Hline.outputStrLn $ "∎ " ++ out
+            Left out -> Hline.outputStrLn $ "↯ " ++ out
+            Right out -> Hline.outputStrLn $ "∎ " ++ out
           loop
 
 main :: IO ()
@@ -36,5 +36,5 @@ main = do
     else do
       input <- getContents
       case rep input of
-        Nothing -> putStrLn "!!ERROR"
-        Just out -> putStrLn out
+        Left out -> putStrLn $ "↯ " ++ out
+        Right out -> putStrLn out

@@ -2,6 +2,7 @@ module Jambda.Reader (
   jread,
 ) where
 
+import qualified Data.Bifunctor as Bi
 import Data.Void
 import Flow
 import Jambda.Types
@@ -52,7 +53,7 @@ readString = do
 
 readSymbol :: Parser JForm
 readSymbol = do
-  first <- letterChar
+  first <- letterChar <|> oneOf "+-"
   rest <- many alphaNumChar
   return $ case first:rest of
     "true" -> JBoolean True
@@ -70,5 +71,5 @@ readForm = do
     readSymbol
   return $ form
 
-jread :: String -> Maybe JForm
-jread input = (parse readForm "repl" input) |> either (const Nothing) Just
+jread :: String -> Either String JForm
+jread input = (parse readForm "repl" input) |> Bi.first show

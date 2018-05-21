@@ -6,24 +6,24 @@ import qualified Data.HashMap.Strict as HMap
 import Flow
 import Jambda.Types
 
-coreAdd :: [JForm] -> JForm
-coreAdd [JInteger a, JInteger b] = JInteger (a + b)
-coreAdd _ = JNothing
+coreAdd :: [JForm] -> JResult
+coreAdd [JInteger a, JInteger b] = Right $ JInteger (a + b)
+coreAdd _ = Left "TypeError"
 
 newEnv :: JEnv
 newEnv =
   HMap.empty
   |> HMap.insert "+" (JFunction coreAdd)
 
-evalAst :: JEnv -> [JForm] -> Maybe JForm
+evalAst :: JEnv -> [JForm] -> JResult
 evalAst env (JIdentifier ident:args) =
   case HMap.lookup ident env of
-    Just (JFunction fn) -> Just $ fn args
-    Just _ -> Nothing
-    Nothing -> Nothing
-evalAst _ _ = Nothing
+    Just (JFunction fn) -> fn args
+    Just _ -> Left "Identifier is not a function"
+    Nothing -> Left "undefined is not a function"
+evalAst _ _ = Left "Literal is not a function"
 
-jeval :: JForm -> Maybe JForm
+jeval :: JForm -> JResult
 jeval (JList forms) = evalAst newEnv forms
-jeval form = Just form
+jeval form = Right form
 
