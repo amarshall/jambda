@@ -25,5 +25,8 @@ evalAst _ _ = Left "Literal is not a function"
 
 jeval :: JForm -> JResult
 jeval (JList forms) = evalAst newEnv forms
+jeval (JIdentifier ident) = case HMap.lookup ident newEnv of
+  Just form -> Right form
+  Nothing -> Left "undefined"
 jeval form = Right form
 
