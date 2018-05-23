@@ -20,9 +20,9 @@ instance Show JForm where
   show (JBoolean False) = "false"
   show (JBoolean True) = "true"
   show (JFloat x) = show x
-  show (JFunction _) = "⸨Function⸩"
+  show (JFunction _) = "ƒ"
   show (JIdentifier x) = "⸨Identifier " ++ x ++ "⸩"
   show (JInteger x) = show x
   show (JList x) = show x
   show (JString x) = show x
-  show JNothing = "⸨Nothing⸩"
+  show JNothing = "∅"
