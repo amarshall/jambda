@@ -11,7 +11,7 @@ data JForm =
   JFloat Double |
   JFunction ([JForm] -> JResult) |
   JIdentifier String |
-  JInteger Integer |
+  JInteger Int |
   JList [JForm] |
   JNothing |
   JString String

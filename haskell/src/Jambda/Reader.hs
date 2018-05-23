@@ -33,7 +33,7 @@ betweenQuotes = between (symbol "\"") (symbol "\"")
 betweenParens :: Parser a -> Parser a
 betweenParens = between (symbol "(") (symbol ")")
 
-integer :: Parser Integer
+integer :: Parser Int
 integer = lexeme Lexer.decimal
 
 readInteger :: Parser JForm
