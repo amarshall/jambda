@@ -30,6 +30,7 @@ executable jambda
   default-language: Haskell2010
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
+    ansi-terminal,
     base >= 4.7 && < 5,
     jambda,
     haskeline >= 0.7 && < 0.8,
