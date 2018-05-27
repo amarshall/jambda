@@ -3,7 +3,7 @@ where
 
 import qualified Data.HashMap.Strict as HMap
 
-type JEnv = HMap.HashMap String JForm
+type Env = HMap.HashMap String JForm
 type JResult = Either String JForm
 
 data JForm =

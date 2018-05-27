@@ -2,31 +2,35 @@ module Jambda.Evaluator (
   jeval,
 ) where
 
-import qualified Data.HashMap.Strict as HMap
-import Flow
+import Control.Monad.Trans.State.Strict
+import Jambda.Env
 import Jambda.Types
 
-coreAdd :: [JForm] -> JResult
-coreAdd [JInteger a, JInteger b] = Right $ JInteger (a + b)
-coreAdd _ = Left "TypeError"
-
-newEnv :: JEnv
-newEnv =
-  HMap.empty
-  |> HMap.insert "+" (JFunction coreAdd)
-
-evalAst :: JEnv -> [JForm] -> JResult
-evalAst env (JIdentifier ident:args) =
-  case HMap.lookup ident env of
-    Just (JFunction fn) -> fn args
-    Just _ -> Left "Identifier is not a function"
-    Nothing -> Left "undefined is not a function"
-evalAst _ _ = Left "Literal is not a function"
-
-jeval :: JForm -> JResult
-jeval (JList forms) = evalAst newEnv forms
-jeval (JIdentifier ident) = case HMap.lookup ident newEnv of
-  Just form -> Right form
-  Nothing -> Left "undefined"
-jeval form = Right form
-
+jeval :: JForm -> State Env JResult
+jeval (JList (form1:argForms)) = do
+  case form1 of
+    JIdentifier "def" -> do
+      case argForms of
+        (JIdentifier name):val:_ -> do
+          result <- jeval val
+          case result of
+            Left _ -> do
+              return result
+            Right _ -> do
+              envSet name val
+              return result
+        _ -> return $ Left "first argument of def must be an identifier"
+    _ -> do
+      formInFnPosition <- jeval form1
+      case formInFnPosition of
+        Right (JFunction fn) -> do
+          args <- mapM (jeval) argForms
+          return $ (mapM id args) >>= fn
+        Right _ -> return $ Left "not a function"
+        Left _ -> return formInFnPosition
+jeval (JIdentifier ident) = do
+  form <- envGet ident
+  return $ case form of
+    Just f -> Right f
+    Nothing -> Left "undefined"
+jeval form = return $ Right form
