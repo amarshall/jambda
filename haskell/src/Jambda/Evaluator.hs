@@ -21,6 +21,24 @@ jeval :: Env -> JForm -> State Env JResult
 jeval localEnv (JList (form1:argForms)) = do
   let jeval2 = jeval localEnv
   case form1 of
+    JIdentifier "typeof" -> do
+      let form = head argForms
+      case form of
+        name@(JIdentifier _) -> do
+          result <- jeval2 name
+          return $ case result of
+            Right f -> Right $ typeof f
+            Left _ -> result
+        _ -> return $ Right $ typeof form
+      where
+        typeof (JBoolean _) = JString "Boolean"
+        typeof (JFloat _) = JString "Float"
+        typeof (JFunction _) = JString "Function"
+        typeof (JIdentifier _) = JString "Identifier"
+        typeof (JInteger _) = JString "Integer"
+        typeof (JList _) = JString "List"
+        typeof (JNothing) = JString "Nothing"
+        typeof (JString _) = JString "String"
     JIdentifier "def" -> do
       case argForms of
         (JIdentifier name):val:_ -> do
