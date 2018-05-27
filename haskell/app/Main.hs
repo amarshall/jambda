@@ -33,7 +33,7 @@ restateify _ (Left x) = state $ \env -> (Left x, env)
 
 rep :: String -> State Env (Either String String)
 rep x =
-  (stateify jread $ Right x) >>= (restateify jeval) >>= (stateify jprint)
+  (stateify jread $ Right x) >>= (restateify $ jeval newEnv) >>= (stateify jprint)
 
 baseEnv :: Env
 baseEnv = execState initCore newEnv
