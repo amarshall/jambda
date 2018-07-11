@@ -8,6 +8,7 @@ Please see the README files in each language’s respective subdirectory for mor
 
 - Ruby
 - Rust (work in progress)
+- Haskell (work in progress)
 
 ## Credits & License
 
