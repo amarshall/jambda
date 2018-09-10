@@ -41,12 +41,12 @@ jeval localEnv (JList (form1:argForms)) = do
         typeof (JString _) = JString "String"
     JIdentifier "def" -> do
       case argForms of
-        (JIdentifier name):val:_ -> do
-          result <- jeval2 val
+        (JIdentifier name):form:_ -> do
+          result <- jeval2 form
           case result of
             Left _ -> do
               return result
-            Right _ -> do
+            Right val -> do
               envSet name val
               return result
         _ -> return $ Left "first argument of def must be an identifier"
