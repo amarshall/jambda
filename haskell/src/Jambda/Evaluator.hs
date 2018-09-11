@@ -72,5 +72,5 @@ jeval localEnv (JIdentifier ident) = do
       form <- envGet ident
       return $ case form of
         Just f -> Right f
-        Nothing -> Left "undefined"
+        Nothing -> Left $ ident ++ " is undefined"
 jeval _ form = return $ Right form
