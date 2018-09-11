@@ -9,13 +9,13 @@ import Jambda.Types
 
 letBindToMap :: JForm -> Either String Env
 letBindToMap (JList ((JIdentifier name):val:xs)) =
-  (letBindToMap $ JList xs) >>= (\env -> Right $ HMap.insert name val env)
+  (letBindToMap $ JList xs) >>= (return . HMap.insert name val)
 letBindToMap (JList []) = Right $ HMap.empty
 letBindToMap _ = Left "bad bind list"
 
 letBindUnion :: Env -> JForm -> Either String Env
 letBindUnion env binds =
-  (letBindToMap binds) >>= (\env2 -> Right $ HMap.union env2 env)
+  (letBindToMap binds) >>= (return . flip HMap.union env)
 
 jeval :: Env -> JForm -> State Env JResult
 jeval localEnv (JList (form1:argForms)) = do
