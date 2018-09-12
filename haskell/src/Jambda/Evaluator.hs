@@ -53,8 +53,7 @@ jeval (JList (form1:argForms)) = do
         (JIdentifier name):form:_ -> do
           result <- jeval form
           case result of
-            Left _ -> do
-              return result
+            Left _ -> return result
             Right val -> do
               envSet name val
               return result
@@ -69,11 +68,10 @@ jeval (JList (form1:argForms)) = do
     JIdentifier "fn" -> do
       case argForms of
         params@(JList _):form:[] ->
-          return $ Right $ JFunction (\args ->
+          return $ Right $ JFunction $ \args ->
             case (fnBindUnion env params (JList args)) of
               Right env2 -> evalState (jeval form) env2
               Left err -> Left err
-          )
         _ -> return $ Left "bad fn (missing params/form, or too many args)"
     _ -> do
       formInFnPosition <- jeval form1
