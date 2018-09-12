@@ -17,15 +17,15 @@ letBindUnion :: Env -> JForm -> Either String Env
 letBindUnion env binds =
   (letBindToMap binds) >>= (return . flip HMap.union env)
 
-jeval :: Env -> JForm -> State Env JResult
-jeval localEnv (JList (form1:argForms)) = do
-  let jeval2 = jeval localEnv
+jeval :: JForm -> State Env JResult
+jeval (JList (form1:argForms)) = do
+  env <- get
   case form1 of
     JIdentifier "typeof" -> do
       let form = head argForms
       case form of
         name@(JIdentifier _) -> do
-          result <- jeval2 name
+          result <- jeval name
           return $ case result of
             Right f -> Right $ typeof f
             Left _ -> result
@@ -42,7 +42,7 @@ jeval localEnv (JList (form1:argForms)) = do
     JIdentifier "def" -> do
       case argForms of
         (JIdentifier name):form:_ -> do
-          result <- jeval2 form
+          result <- jeval form
           case result of
             Left _ -> do
               return result
@@ -53,24 +53,25 @@ jeval localEnv (JList (form1:argForms)) = do
     JIdentifier "let" -> do
       case argForms of
         binds@(JList _):form:[] -> do
-          case (letBindUnion localEnv binds) of
-            Right env -> jeval env form
+          case (letBindUnion env binds) of
+            Right env2 -> return $ evalState (jeval form) env2
             Left err -> return $ Left err
         _ -> return $ Left "bad let (missing binds/form, or too many args)"
     _ -> do
-      formInFnPosition <- jeval2 form1
+      formInFnPosition <- jeval form1
       case formInFnPosition of
         Right (JFunction fn) -> do
-          args <- mapM (jeval2) argForms
+          args <- mapM (jeval) argForms
           return $ (mapM id args) >>= fn
         Right _ -> return $ Left "not a function"
         Left _ -> return formInFnPosition
-jeval localEnv (JIdentifier ident) = do
-  case HMap.lookup ident localEnv of
+jeval (JIdentifier ident) = do
+  env <- get
+  case HMap.lookup ident env of
     Just f -> return $ Right f
     Nothing -> do
       form <- envGet ident
       return $ case form of
         Just f -> Right f
         Nothing -> Left $ ident ++ " is undefined"
-jeval _ form = return $ Right form
+jeval form = return $ Right form
