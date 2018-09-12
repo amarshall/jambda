@@ -33,11 +33,14 @@ betweenQuotes = between (symbol "\"") (symbol "\"")
 betweenParens :: Parser a -> Parser a
 betweenParens = between (symbol "(") (symbol ")")
 
+nothing :: MonadParsec e s m => m ()
+nothing = return ()
+
 integer :: Parser Int
-integer = lexeme Lexer.decimal
+integer = Lexer.signed nothing (lexeme Lexer.decimal)
 
 float :: Parser Double
-float = lexeme Lexer.float
+float = Lexer.signed nothing (lexeme Lexer.float)
 
 readInteger :: Parser JForm
 readInteger = do
@@ -76,7 +79,7 @@ readForm :: Parser JForm
 readForm = do
   eat
   form <-
-    readNum <|>
+    try readNum <|>
     readList1 <|>
     readString <|>
     readSymbol
