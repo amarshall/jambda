@@ -17,7 +17,13 @@ jLength [JList xs] = Right $ JInteger $ (length xs)
 jLength [JString str] = Right $ JInteger $ (length str)
 jLength _ = Left "TypeError"
 
+jStr :: [JForm] -> JResult
+jStr (form:[]) = return $ JString (show form)
+jStr (_:_) = Left "wrong arity"
+jStr [] = return $ JString ""
+
 initCore :: State Env ()
 initCore = do
   envSet "+" (JFunction jAdd)
   envSet "length" (JFunction jLength)
+  envSet "str" (JFunction jStr)
