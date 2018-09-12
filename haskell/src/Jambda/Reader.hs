@@ -83,4 +83,4 @@ readForm = do
   return $ form
 
 jread :: String -> Either String JForm
-jread input = (parse readForm "repl" input) |> Bi.first show
+jread input = (parse readForm "repl" input) |> Bi.first parseErrorPretty
