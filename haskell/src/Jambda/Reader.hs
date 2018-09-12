@@ -36,10 +36,21 @@ betweenParens = between (symbol "(") (symbol ")")
 integer :: Parser Int
 integer = lexeme Lexer.decimal
 
+float :: Parser Double
+float = lexeme Lexer.float
+
 readInteger :: Parser JForm
 readInteger = do
   x <- integer
   return $ JInteger x
+
+readFloat :: Parser JForm
+readFloat = do
+  x <- float
+  return $ JFloat x
+
+readNum :: Parser JForm
+readNum = try readFloat <|> readInteger
 
 readList1 :: Parser JForm
 readList1 = do
@@ -65,7 +76,7 @@ readForm :: Parser JForm
 readForm = do
   eat
   form <-
-    readInteger <|>
+    readNum <|>
     readList1 <|>
     readString <|>
     readSymbol
