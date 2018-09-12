@@ -17,6 +17,15 @@ letBindUnion :: Env -> JForm -> Either String Env
 letBindUnion env binds =
   (letBindToMap binds) >>= (return . flip HMap.union env)
 
+fnBindToMap :: JForm -> JForm -> Either String Env
+fnBindToMap (JList ((JIdentifier param):params)) (JList (arg:args)) =
+  fnBindToMap (JList params) (JList args) >>= (\env -> Right $ HMap.insert param arg env)
+fnBindToMap (JList []) (JList []) = Right $ HMap.empty
+fnBindToMap _ _ = Left "mismatched arity"
+
+fnBindUnion :: Env -> JForm -> JForm -> Either String Env
+fnBindUnion env params args = (fnBindToMap params args) >>= (return . flip HMap.union env)
+
 jeval :: JForm -> State Env JResult
 jeval (JList (form1:argForms)) = do
   env <- get
@@ -57,6 +66,15 @@ jeval (JList (form1:argForms)) = do
             Right env2 -> return $ evalState (jeval form) env2
             Left err -> return $ Left err
         _ -> return $ Left "bad let (missing binds/form, or too many args)"
+    JIdentifier "fn" -> do
+      case argForms of
+        params@(JList _):form:[] ->
+          return $ Right $ JFunction (\args ->
+            case (fnBindUnion env params (JList args)) of
+              Right env2 -> evalState (jeval form) env2
+              Left err -> Left err
+          )
+        _ -> return $ Left "bad fn (missing params/form, or too many args)"
     _ -> do
       formInFnPosition <- jeval form1
       case formInFnPosition of
