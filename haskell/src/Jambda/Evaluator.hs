@@ -73,6 +73,14 @@ jeval (JList (form1:argForms)) = do
               Right env2 -> evalState (jeval form) env2
               Left err -> Left err
         _ -> return $ Left "bad fn (missing params/form, or too many args)"
+    JIdentifier "if" -> do
+      case argForms of
+        condition:whenTrue:whenFalse:[] ->
+          case evalState (jeval condition) env of
+            Right (JBoolean False) -> jeval whenFalse
+            Right _ -> jeval whenTrue
+            err@(Left _) -> return err
+        _ -> return $ Left "bad if (incorrect number of forms)"
     _ -> do
       formInFnPosition <- jeval form1
       case formInFnPosition of
