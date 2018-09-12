@@ -83,7 +83,7 @@ readForm = do
     readList1 <|>
     readString <|>
     readSymbol
-  return $ form
+  return form
 
 jread :: String -> Either String JForm
 jread input = (parse readForm "repl" input) |> Bi.first parseErrorPretty
