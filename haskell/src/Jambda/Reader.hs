@@ -75,11 +75,18 @@ readSymbol = do
     "nil" -> JNothing
     x -> JIdentifier x
 
+readQuote :: Parser JForm
+readQuote = do
+  _ <- char '\''
+  form <- readForm
+  return $ JList [JIdentifier "quote", form]
+
 readForm :: Parser JForm
 readForm = do
   eat
   form <-
     try readNum <|>
+    readQuote <|>
     readList1 <|>
     readString <|>
     readSymbol

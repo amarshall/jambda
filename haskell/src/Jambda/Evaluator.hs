@@ -59,6 +59,10 @@ jeval (JList (form1:argForms)) = do
               return result
         _:_:[] -> return $ Left "first argument of def must be an identifier"
         _ -> return $ Left "bad def (missing name/form, or too many args)"
+    JIdentifier "quote" -> do
+      case argForms of
+        form:[] -> return $ Right form
+        _ -> return $ Left "bad quote (more than one arg)"
     JIdentifier "let" -> do
       case argForms of
         binds@(JList _):form:[] -> do
