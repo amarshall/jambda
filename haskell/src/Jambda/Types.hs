@@ -10,6 +10,7 @@ data JForm =
   JBoolean Bool |
   JFloat Double |
   JFunction ([JForm] -> JResult) |
+  JLambda (Env -> [JForm] -> JResult) |
   JIdentifier String |
   JInteger Int |
   JList [JForm] |
@@ -45,6 +46,7 @@ instance Show JForm where
   show (JFunction _) = "ƒ"
   show (JIdentifier x) = "⸨Identifier " ++ x ++ "⸩"
   show (JInteger x) = show x
+  show (JLambda _) = "ƒ"
   show (JList x) = show x
   show (JString x) = "\"" ++ x ++ "\""
   show JNothing = "∅"
