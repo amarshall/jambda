@@ -42,6 +42,7 @@ replOut :: MonadIO m => Either String String -> Hline.InputT m ()
 replOut (Left out) = Hline.outputStrLn $ (colorizeStr TermT.Red "↯ ") ++ out
 replOut (Right out) = Hline.outputStrLn $ (colorizeStr TermT.Green "∎ ") ++ out
 
+hLineSettings :: Hline.Settings (StateT Env IO)
 hLineSettings = Hline.defaultSettings {Hline.historyFile = Just ".jambda-history"}
 
 repl :: IO ()
