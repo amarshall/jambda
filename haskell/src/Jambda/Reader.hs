@@ -57,7 +57,7 @@ readNum = try readFloat <|> readInteger
 
 readList1 :: Parser JForm
 readList1 = do
-  forms <- betweenParens $ sepEndBy readForm eat
+  forms <- betweenParens readForms
   return $ JList forms
 
 readString :: Parser JForm
@@ -83,7 +83,17 @@ readForm = do
     readList1 <|>
     readString <|>
     readSymbol
+  eat
+  return form
+
+readForms :: Parser [JForm]
+readForms = many readForm
+
+readAll :: Parser JForm
+readAll = do
+  form <- readForm
+  eof
   return form
 
 jread :: String -> Either String JForm
-jread input = (parse readForm "repl" input) |> Bi.first parseErrorPretty
+jread input = (parse readAll "repl" input) |> Bi.first parseErrorPretty
