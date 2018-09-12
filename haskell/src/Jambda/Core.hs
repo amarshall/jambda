@@ -8,6 +8,7 @@ import Jambda.Env
 import Jambda.Types
 
 jAdd :: [JForm] -> JResult
+jAdd [JString a, JString b] = Right $ JString (a ++ b)
 jAdd [JInteger a, JInteger b] = Right $ JInteger (a + b)
 jAdd _ = Left "TypeError"
 
