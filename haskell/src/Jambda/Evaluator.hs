@@ -50,14 +50,15 @@ jeval (JList (form1:argForms)) = do
         typeof (JString _) = JString "String"
     JIdentifier "def" -> do
       case argForms of
-        (JIdentifier name):form:_ -> do
+        (JIdentifier name):form:[] -> do
           result <- jeval form
           case result of
             Left _ -> return result
             Right val -> do
               envSet name val
               return result
-        _ -> return $ Left "first argument of def must be an identifier"
+        _:_:[] -> return $ Left "first argument of def must be an identifier"
+        _ -> return $ Left "bad def (missing name/form, or too many args)"
     JIdentifier "let" -> do
       case argForms of
         binds@(JList _):form:[] -> do
