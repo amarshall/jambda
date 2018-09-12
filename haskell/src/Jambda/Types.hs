@@ -24,5 +24,5 @@ instance Show JForm where
   show (JIdentifier x) = "⸨Identifier " ++ x ++ "⸩"
   show (JInteger x) = show x
   show (JList x) = show x
-  show (JString x) = x
+  show (JString x) = "\"" ++ x ++ "\""
   show JNothing = "∅"
