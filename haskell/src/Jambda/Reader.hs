@@ -67,8 +67,8 @@ readString = do
 
 readSymbol :: Parser JForm
 readSymbol = do
-  first <- letterChar <|> oneOf "+-"
-  rest <- many alphaNumChar
+  first <- letterChar <|> symbolChar
+  rest <- many $ noneOf "() \n"
   return $ case first:rest of
     "true" -> JBoolean True
     "false" -> JBoolean False
