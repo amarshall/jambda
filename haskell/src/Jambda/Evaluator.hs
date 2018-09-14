@@ -99,6 +99,7 @@ jeval globalEnv localEnv (JList (form1:argForms)) = do
         condition:whenTrue:whenFalse:[] ->
           case jevalHere condition of
             Right (JBoolean False) -> jevalHere whenFalse
+            Right JNothing -> jevalHere whenFalse
             Right _ -> jevalHere whenTrue
             err@(Left _) -> err
         _ -> Left "bad if (incorrect number of forms)"
