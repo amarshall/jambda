@@ -12,7 +12,9 @@ import Jambda.Types
 letBindToMap :: JForm -> Either String Env
 letBindToMap (JList ((JIdentifier name):val:xs)) =
   letBindToMap (JList xs) >>= return . HMap.insert name val
-letBindToMap (JList []) = Right $ HMap.empty
+letBindToMap (JList []) = return $ HMap.empty
+letBindToMap (JList (_:_:_)) = Left "name in bind list must be an identifier"
+letBindToMap (JList (_:[])) = Left "uneven bind list"
 letBindToMap _ = Left "bad bind list"
 
 letBindUnion :: Env -> JForm -> Either String Env
@@ -20,9 +22,11 @@ letBindUnion env binds = letBindToMap binds >>= return . flip HMap.union env
 
 fnBindToMap :: JForm -> JForm -> Either String Env
 fnBindToMap (JList ((JIdentifier param):params)) (JList (arg:args)) =
-  fnBindToMap (JList params) (JList args) >>= (\env -> Right $ HMap.insert param arg env)
-fnBindToMap (JList []) (JList []) = Right $ HMap.empty
-fnBindToMap _ _ = Left "mismatched arity"
+  fnBindToMap (JList params) (JList args) >>= return . HMap.insert param arg
+fnBindToMap (JList []) (JList []) = return $ HMap.empty
+fnBindToMap (JList params) (JList args) =
+  Left $ "mismatched arity (given " ++ (show $ length args) ++ ", expected " ++ (show $ length params)
+fnBindToMap _ _ = Left "bug!"
 
 fnBindUnion :: Env -> JForm -> JForm -> Either String Env
 fnBindUnion env params args = fnBindToMap params args >>= return . flip HMap.union env
