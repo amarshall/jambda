@@ -103,4 +103,4 @@ readAll = do
   return form
 
 jread :: String -> Either String JForm
-jread input = (parse readAll "repl" input) |> Bi.first parseErrorPretty
+jread input = (parse readAll "repl" input) |> Bi.first errorBundlePretty

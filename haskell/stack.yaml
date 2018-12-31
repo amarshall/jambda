@@ -1,4 +1,4 @@
-resolver: lts-11.9
+resolver: lts-13.0
 
 packages:
   - .
@@ -6,8 +6,6 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
-  - flow-1.0.12
-  - haskeline-0.7.4.2
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

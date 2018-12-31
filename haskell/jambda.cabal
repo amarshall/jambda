@@ -23,7 +23,7 @@ library
   build-depends:
     base >= 4.7 && < 5,
     flow >= 1.0 && < 2,
-    megaparsec >= 6.4 && < 7,
+    megaparsec >= 7.0 && < 8,
     transformers,
     unordered-containers
 
